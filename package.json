@@ -1,0 +1,30 @@
+{
+  "name": "jsharmony-db",
+  "version": "1.0.0",
+  "description": "jsHarmony Database Core",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha --reporter spec"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apHarmony/jsharmony-db"
+  },
+  "keywords": [
+    "jsHarmony",
+    "Database",
+    "Library"
+  ],
+  "author": "apHarmony <contact@apharmony.com> (http://www.apharmony.com/)",
+  "license": "LGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/apHarmony/jsharmony-db/issues"
+  },
+  "homepage": "https://github.com/apHarmony/jsharmony-db",
+  "dependencies": {
+    "async": "^2.1.4"
+  },
+  "devDependencies": {
+    "mocha": "^2.2.5"
+  }
+}
