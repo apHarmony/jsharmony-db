@@ -47,4 +47,8 @@ describe('Basic',function(){
     assert((sql=="select * from TEST"),'Success');
     done();
   });
+  it('Util', function (done) {
+    assert((DB.util.ReplaceAll('abcdefabc','abc','def')=='defdefdef'),'Success');
+    done();
+  });
 });
