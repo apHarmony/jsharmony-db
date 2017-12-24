@@ -1,6 +1,6 @@
 {
   "name": "jsharmony-db",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "jsHarmony Database Core",
   "main": "index.js",
   "scripts": {
@@ -22,7 +22,8 @@
   },
   "homepage": "https://github.com/apHarmony/jsharmony-db",
   "dependencies": {
-    "async": "^2.1.4"
+    "async": "^2.1.4",
+    "lodash": "^4.14.0"
   },
   "devDependencies": {
     "mocha": "^2.2.5"
