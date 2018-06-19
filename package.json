@@ -1,6 +1,6 @@
 {
   "name": "jsharmony-db",
-  "version": "1.0.16",
+  "version": "1.0.17",
   "description": "jsHarmony Database Core",
   "main": "index.js",
   "scripts": {
