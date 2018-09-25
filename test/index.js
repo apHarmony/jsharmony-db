@@ -28,22 +28,25 @@ function isEmpty(obj) {
     return true;
 }
 
+var dbconfig = { _driver: new DB.noDriver() };
+var db = new DB(dbconfig);
+
 describe('Basic',function(){
   it('Types', function (done) {
     assert((DB.types.VarChar(50).length==50),'Success');
     done();
   });
   it('ParseSQL', function (done) {
-    var sql = DB.ParseSQL([
+    var sql = db.ParseSQL([
       "select * from",
       "TEST"
     ]);
     assert((sql=="select * from TEST"),'Success');
     done();
   });
-  it('ParseSQL ENT', function (done) {
-    var ent = {SQL:{'sample':'select * from TEST'}};
-    var sql = DB.ParseSQL('sample',ent);
+  it('ParseSQL JSH', function (done) {
+    db.SQLExt.Funcs['sample'] = 'select * from TEST';
+    var sql = db.ParseSQL('sample');
     assert((sql=="select * from TEST"),'Success');
     done();
   });
@@ -53,8 +56,11 @@ describe('Basic',function(){
   });
   it('Log', function (done) {
     var did_log = false;
-    global.log = function(){ did_log = true; }
-    DB.log('Test Log');
+    db.platform.Log = function(msg){ did_log = true; }
+    db.platform.Log.info = function(msg){ db.platform.Log(); }
+    db.platform.Log.warning = function(msg){ db.platform.Log(); }
+    db.platform.Log.error = function(msg){ db.platform.Log(); }
+    db.Log('Test Log');
     assert(did_log,'Success');
     done();
   });
