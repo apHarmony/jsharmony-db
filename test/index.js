@@ -19,6 +19,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
 
 var DB = require('../index');
 var assert = require('assert');
+var _ = require('lodash');
 
 function isEmpty(obj) {
     for(var key in obj) {
@@ -63,5 +64,38 @@ describe('Basic',function(){
     db.Log('Test Log');
     assert(did_log,'Success');
     done();
+  });
+  it('Soundex', function(done){
+    var soundex_tests = {
+      'A': 'A000',
+      'Ab': 'A100',
+      'abcd': 'A123',
+      'Ac': 'A200',
+      'Ajmr': 'A256',
+      'Adl': 'A340',
+      'Bbcd': 'B230',
+      'BCDL': 'B234',
+      'CAaEeIiOoUuHhYybcd': 'C123',
+      'Dbcdlmr': 'D123',
+      'Gbfcgdt': 'G123',
+      'I': 'I000',
+      'Jbwb': 'J100',
+      'Jbob': 'J110',
+      'Robert': 'R163',
+      'Rupert': 'R163',
+      'Rubin': 'R150',
+      'Ashcraft': 'A261',
+      'Ashcroft': 'A261',
+      'Tymczak': 'T522',
+      'Pfister': 'P236',
+      'Honeyman': 'H555',
+    }
+    
+    _.each(soundex_tests, function(soundex_expected_result, soundex_test){
+      var soundex_result = DB.util.Soundex(soundex_test);
+      assert(soundex_result == soundex_expected_result);
+    });
+    done();
+    
   });
 });
