@@ -89,6 +89,29 @@ exports = module.exports = function shouldBehaveLikeAnObject(db, timestampIn, ti
       assert(!err,'Success');
       return done();
     });
+  });
 
+  it('should include sample data', function(done) {
+    db.Scalar('','select name from test.chair',[],{},function(err,rslt){
+      if(err) console.log(err);
+      assert.equal(rslt, 'Default Value');
+      return done();
+    });
+  });
+
+  it('should set default timestamp', function(done) {
+    db.Scalar('','select etstmp from test.chair',[],{},function(err,rslt){
+      if(err) console.log(err);
+      assert.equal(rslt, timestampOut);
+      return done();
+    });
+  });
+
+  it('should set modified timestamp', function(done) {
+    db.Scalar('','select mtstmp from test.chair',[],{},function(err,rslt){
+      if(err) console.log(err);
+      assert.equal(rslt, timestampOut);
+      return done();
+    });
   });
 }
