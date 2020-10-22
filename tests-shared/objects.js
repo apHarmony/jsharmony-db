@@ -20,7 +20,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
 var assert = require('assert');
 var _ = require('lodash');
 
-var obj = {
+var table = {
   "name": "test.chair",
   "moduleName": "test",
   "type": "table",
@@ -45,6 +45,36 @@ var obj = {
   ]
 };
 
+var view = {
+  "name": "test.v_chair",
+  "moduleName": "test",
+  "type": "view",
+  "caption": ["View","Views"],
+  "tables": {
+    "test.chair": {
+      "columns": [
+        { "name": "id"},
+        { "name": "name"}
+      ]
+    }
+  },
+  "where": "chair.name != 'Default Value'",
+  "triggers": [
+    {"on": ["insert"], "exec": [
+        "insert into {schema}.chair(name) values(inserted(name))"
+      ]
+    },
+    {"on": ["update"], "exec": [
+        "update {schema}.chair set name=inserted(name) where id = deleted(id)"
+      ]
+    },
+    {"on": ["delete"], "exec": [
+        "delete from {schema}.chair where id = deleted(id)"
+      ]
+    }
+  ]
+};
+
 exports = module.exports = function shouldBehaveLikeAnObject(db, timestampIn, timestampOut) {
   before(function(done) {
     db.platform.Modules = {
@@ -63,7 +93,7 @@ exports = module.exports = function shouldBehaveLikeAnObject(db, timestampIn, ti
     };
     db.SQLExt.Funcs['jsh.map.timestamp'] = timestampIn;
     db.SQLExt.Funcs['jsh.map.current_user'] = "'user'";
-    db.SQLExt.Objects['test'] = [obj];
+    db.SQLExt.Objects['test'] = [table, view];
     db.RunScriptArray(db.platform, [
       {sql:'object:drop', module: 'test'},
       {sql:'object:init', module: 'test'},
@@ -86,7 +116,7 @@ exports = module.exports = function shouldBehaveLikeAnObject(db, timestampIn, ti
   it('should create the table', function(done) {
     db.Scalar('','select count(*) from test.chair',[],{},function(err,rslt){
       if(err) console.log(err);
-      assert(!err,'Success');
+      assert.equal(rslt, 1);
       return done();
     });
   });
@@ -112,6 +142,62 @@ exports = module.exports = function shouldBehaveLikeAnObject(db, timestampIn, ti
       if(err) console.log(err);
       assert.equal(rslt, timestampOut);
       return done();
+    });
+  });
+
+  it('view exists', function(done) {
+    db.Scalar('','select count(*) from test.v_chair',[],{},function(err,rslt){
+      if(err) console.log(err);
+      assert.equal(rslt, 0);
+      return done();
+    });
+  });
+
+  describe('updatedable view', function() {
+    before(function(done) {
+      db.Command('','insert into test.chair(name) values (\'fixture\')',[],{},function(err,rslt){
+        if(err) console.log(err);
+        return done();
+      });
+    });
+    after(function(done) {
+      db.Command('','delete from test.chair where name != \'Default Value\'',[],{},function(err,rslt){
+        if(err) console.log(err);
+        return done();
+      });
+    });
+
+    it('view is insertable', function(done) {
+      db.Command('','insert into test.v_chair(name) values (\'view inserted\')',[],{},function(err,rslt){
+        if(err) console.log(err);
+        db.Scalar('','select count(*) from test.chair where name = \'view inserted\'',[],{},function(err,rslt){
+          if(err) console.log(err);
+          assert.equal(rslt, 1);
+          return done();
+        });
+      });
+    });
+
+    it('view is updateable', function(done) {
+      db.Command('','update test.v_chair set name = \'updated\' where name = \'fixture\'',[],{},function(err,rslt){
+        if(err) console.log(err);
+        db.Scalar('','select count(*) from test.chair where name = \'updated\'',[],{},function(err,rslt){
+          if(err) console.log(err);
+          assert.equal(rslt, 1);
+          return done();
+        });
+      });
+    });
+
+    it('view is deleteable', function(done) {
+      db.Command('','delete from test.v_chair where name = \'fixture\'',[],{},function(err,rslt){
+        if(err) console.log(err);
+        db.Scalar('','select count(*) from test.chair where name = \'fixture\'',[],{},function(err,rslt){
+          if(err) console.log(err);
+          assert.equal(rslt, 0);
+          return done();
+        });
+      });
     });
   });
 }
