@@ -19,10 +19,13 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
 
 var assert = require('assert');
 var _ = require('lodash');
+var path = require('path');
+var fs = require('fs');
 
 var objects = [
   {
     "name": "test.chair",
+    "path": path.join(__dirname, "/chair.json"),
     "moduleName": "test",
     "type": "table",
     "caption": ["Table","Tables"],
@@ -42,13 +45,14 @@ var objects = [
       }
     ],
     "sample_data": [
-      { "name": "Default Value" }
+      { "name": "Default Value", "_FILES": { "a_file.txt": "{{id}}.txt" } }
     ],
     "_foreignkeys": {},
     "_dependencies": {}
   },
   {
     "name": "test.v_chair",
+    "path": "./dir/chair.json",
     "moduleName": "test",
     "type": "view",
     "caption": ["View","Views"],
@@ -79,6 +83,7 @@ var objects = [
   },
   {
     "name": "test.witness",
+    "path": "./dir/host.json",
     "moduleName": "test",
     "type": "table",
     "caption": ["Witness","Witnesses"],
@@ -95,6 +100,7 @@ var objects = [
   },
   {
     "name": "test.other",
+    "path": "./dir/host.json",
     "moduleName": "test",
     "type": "table",
     "caption": ["Other","Others"],
@@ -107,6 +113,7 @@ var objects = [
   },
   {
     "name": "test.target",
+    "path": "./dir/host.json",
     "moduleName": "test",
     "type": "table",
     "caption": ["Target","Targets"],
@@ -126,6 +133,7 @@ var objects = [
   },
   {
     "name": "test.v_host",
+    "path": "./dir/host.json",
     "moduleName": "test",
     "type": "view",
     "caption": ["Host","Hosts"],
@@ -174,6 +182,9 @@ exports = module.exports = function shouldBehaveLikeAnObject(db, timestampIn, ti
         },
       }
     };
+    if(!fs.existsSync('data')) fs.mkdirSync('data', '0777');
+    if(!fs.existsSync('data/test')) fs.mkdirSync('data/test', '0777');
+    db.platform.Config.datadir = 'data/test';
     db.SQLExt.Funcs['jsh.map.timestamp'] = timestampIn;
     db.SQLExt.Funcs['jsh.map.current_user'] = "'user'";
     db.SQLExt.Objects['test'] = objects;
