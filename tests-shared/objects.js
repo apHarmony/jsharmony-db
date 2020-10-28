@@ -79,8 +79,8 @@ var objects = [
     "tables": {
       "test.chair": {
         "columns": [
-          { "name": "id"},
-          { "name": "name"}
+          { "name": "id", "type": "bigint", "sqlselect": "min(id)"},
+          { "name": "name", "type": "varchar", "length": 256, "sqlselect": "min(name)"}
         ]
       }
     },
@@ -272,7 +272,7 @@ exports = module.exports = function shouldBehaveLikeAnObject(db, timestampIn, ti
   it('view exists', function(done) {
     db.Scalar('','select count(*) from test.v_chair',[],{},function(err,rslt){
       if(err) console.log(err);
-      assert.equal(rslt, 0);
+      assert.equal(rslt, 1);
       return done();
     });
   });
