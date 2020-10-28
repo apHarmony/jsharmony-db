@@ -47,6 +47,26 @@ var objects = [
     "sample_data": [
       { "name": "Default Value", "_FILES": { "a_file.txt": "{{id}}.txt" } }
     ],
+    "unique": [
+      ["id", "name"]
+    ],
+    "index": [
+      { "columns": ["id", "name"] },
+      { "columns": ["name"] }
+    ],
+    "_foreignkeys": {},
+    "_dependencies": {}
+  },
+  {
+    "name": "test.multi",
+    "path": path.join(__dirname, "/chair.json"),
+    "moduleName": "test",
+    "type": "table",
+    "caption": ["Multi","Multis"],
+    "columns": [
+      { "name": "id", "type": "bigint", "key": true, "null": false },
+      { "name": "beta", "type": "bigint", "key": true, "null": false },
+    ],
     "_foreignkeys": {},
     "_dependencies": {}
   },
@@ -237,6 +257,14 @@ exports = module.exports = function shouldBehaveLikeAnObject(db, timestampIn, ti
     db.Scalar('','select mtstmp from test.chair',[],{},function(err,rslt){
       if(err) console.log(err);
       assert.equal(rslt, timestampOut);
+      return done();
+    });
+  });
+
+  it('supports multiple keys', function(done) {
+    db.Command('','insert into test.multi(id, beta) values (1, 1)',[],{},function(err,rslt){
+      if(err) console.log(err);
+      console.log(rslt)
       return done();
     });
   });
