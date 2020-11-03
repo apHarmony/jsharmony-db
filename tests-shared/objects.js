@@ -87,15 +87,18 @@ var objects = [
     "where": "chair.name != 'Default Value'",
     "triggers": [
       {"on": ["insert"], "exec": [
-          "insert into {schema}.chair(name) values(inserted(name))"
+          "insert into {schema}.chair(name) values(inserted(name))",
+          "increment_changes()"
         ]
       },
       {"on": ["update"], "exec": [
-          "update {schema}.chair set name=inserted(name) where id = deleted(id)"
+          "update {schema}.chair set name=inserted(name) where id = deleted(id)",
+          "increment_changes()"
         ]
       },
       {"on": ["delete"], "exec": [
-          "delete from {schema}.chair where id = deleted(id)"
+          "delete from {schema}.chair where id = deleted(id);",
+          "increment_changes()"
         ]
       }
     ],
@@ -179,7 +182,7 @@ var objects = [
   },
 ];
 
-exports = module.exports = function shouldBehaveLikeAnObject(db, timestampIn, timestampOut) {
+exports = module.exports = function shouldBehaveLikeAnObject(db, timestampIn, timestampOut, rowcountSql) {
   var options = {
     dbconfig: db.dbconfig,
     sqlFuncs: {
@@ -264,7 +267,7 @@ exports = module.exports = function shouldBehaveLikeAnObject(db, timestampIn, ti
   it('supports multiple keys', function(done) {
     db.Command('','insert into test.multi(id, beta) values (1, 1)',[],{},function(err,rslt){
       if(err) console.log(err);
-      console.log(rslt)
+      assert(!err);
       return done();
     });
   });
@@ -289,13 +292,13 @@ exports = module.exports = function shouldBehaveLikeAnObject(db, timestampIn, ti
   });
 
   describe('updatedable view', function() {
-    before(function(done) {
+    beforeEach(function(done) {
       db.Command('','insert into test.chair(name) values (\'fixture\')',[],{},function(err,rslt){
         if(err) console.log(err);
         return done();
       });
     });
-    after(function(done) {
+    afterEach(function(done) {
       db.Command('','delete from test.chair where name != \'Default Value\'',[],{},function(err,rslt){
         if(err) console.log(err);
         return done();
@@ -313,6 +316,23 @@ exports = module.exports = function shouldBehaveLikeAnObject(db, timestampIn, ti
       });
     });
 
+    it('view insert rowcount with changes', function(done) {
+      db.Row('',rowcountSql('insert into test.v_chair(name) values (\'view inserted\')'),[],{},function(err,rslt){
+        if(err) console.log(err);
+        assert.equal(rslt.xrowcount, 1)
+        return done();
+      });
+    });
+
+    it('view insert rowcount without changes', function(done) {
+      db.Row('',rowcountSql('insert into test.v_chair(name) select (\'view inserted\') where 1=0'),[],{},function(err,rslt){
+        if(err) console.log(err);
+        assert.equal(rslt.xrowcount, 0)
+        return done();
+      });
+    });
+
+
     it('view is updateable', function(done) {
       db.Command('','update test.v_chair set name = \'updated\' where name = \'fixture\'',[],{},function(err,rslt){
         if(err) console.log(err);
@@ -324,6 +344,22 @@ exports = module.exports = function shouldBehaveLikeAnObject(db, timestampIn, ti
       });
     });
 
+    it('view update rowcount with changes', function(done) {
+      db.Row('',rowcountSql('update test.v_chair set name = \'updated\' where name = \'fixture\''),[],{},function(err,rslt){
+        if(err) console.log(err);
+        assert.equal(rslt.xrowcount, 1)
+        return done();
+      });
+    });
+
+    it('view update rowcount without changes', function(done) {
+      db.Row('',rowcountSql('update test.v_chair set name = \'updated\' where 1=0'),[],{},function(err,rslt){
+        if(err) console.log(err);
+        assert.equal(rslt.xrowcount, 0)
+        return done();
+      });
+    });
+
     it('view is deleteable', function(done) {
       db.Command('','delete from test.v_chair where name = \'fixture\'',[],{},function(err,rslt){
         if(err) console.log(err);
@@ -332,6 +368,22 @@ exports = module.exports = function shouldBehaveLikeAnObject(db, timestampIn, ti
           assert.equal(rslt, 0);
           return done();
         });
+      });
+    });
+
+    it('view delete rowcount with changes', function(done) {
+      db.Row('',rowcountSql('delete from test.v_chair where name = \'fixture\''),[],{},function(err,rslt){
+        if(err) console.log(err);
+        assert.equal(rslt.xrowcount, 1)
+        return done();
+      });
+    });
+
+    it('view delete rowcount without changes', function(done) {
+      db.Row('',rowcountSql('delete from test.v_chair where 1=0'),[],{},function(err,rslt){
+        if(err) console.log(err);
+        assert.equal(rslt.xrowcount, 0)
+        return done();
       });
     });
   });
