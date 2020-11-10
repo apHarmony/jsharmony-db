@@ -161,10 +161,10 @@ var objects = [
     "type": "view",
     "caption": ["Host","Hosts"],
     "tables": {
-      "test.chair": {
+      "test.target": {
         "columns": [
           { "name": "id"},
-          { "name": "name"}
+          { "name": "x"}
         ]
       }
     },
@@ -182,7 +182,7 @@ var objects = [
   },
 ];
 
-exports = module.exports = function shouldBehaveLikeAnObject(db, timestampIn, timestampOut, rowcountSql) {
+exports = module.exports = function shouldBehaveLikeAnObject(db, DB, timestampIn, timestampOut, rowcountSql) {
   var options = {
     dbconfig: db.dbconfig,
     sqlFuncs: {
@@ -234,7 +234,7 @@ exports = module.exports = function shouldBehaveLikeAnObject(db, timestampIn, ti
 
   it('should create the table', function(done) {
     db.Scalar('','select count(*) from test.chair',[],{},function(err,rslt){
-      if(err) console.log(err);
+      if(err) return done(err);
       assert.equal(rslt, 1);
       return done();
     });
@@ -242,7 +242,7 @@ exports = module.exports = function shouldBehaveLikeAnObject(db, timestampIn, ti
 
   it('should include sample data', function(done) {
     db.Scalar('','select name from test.chair',[],{},function(err,rslt){
-      if(err) console.log(err);
+      if(err) return done(err);
       assert.equal(rslt, 'Default Value');
       return done();
     });
@@ -258,7 +258,7 @@ exports = module.exports = function shouldBehaveLikeAnObject(db, timestampIn, ti
 
   it('should set modified timestamp', function(done) {
     db.Scalar('','select mtstmp from test.chair',[],{},function(err,rslt){
-      if(err) console.log(err);
+      if(err) return done(err);
       assert.equal(rslt, timestampOut);
       return done();
     });
@@ -266,7 +266,7 @@ exports = module.exports = function shouldBehaveLikeAnObject(db, timestampIn, ti
 
   it('supports multiple keys', function(done) {
     db.Command('','insert into test.multi(id, beta) values (1, 1)',[],{},function(err,rslt){
-      if(err) console.log(err);
+      if(err) return done(err);
       assert(!err);
       return done();
     });
@@ -274,42 +274,69 @@ exports = module.exports = function shouldBehaveLikeAnObject(db, timestampIn, ti
 
   it('view exists', function(done) {
     db.Scalar('','select count(*) from test.v_chair',[],{},function(err,rslt){
-      if(err) console.log(err);
+      if(err) return done(err);
       assert.equal(rslt, 1);
       return done();
     });
   });
 
   it('last insert identity', function(done) {
-    db.Command('','insert into test.v_host(name) values (\'view inserted\')',[],{},function(err,rslt){
-      if(err) console.log(err);
+    db.Command('','insert into test.v_host(x) values (0)',[],{},function(err,rslt){
+      if(err) return done(err);
       db.Row('','select reported_insert_id, reported_last_insert_identity from test.witness',[],{},function(err,rslt){
-        if(err) console.log(err);
+        if(err) return done(err);
         assert.equal(rslt[0], rslt[1]);
         return done();
       });
     });
   });
 
+  it('putModelForm returns the new id for a view', function(done) {
+    var ent = {};
+    var model = {
+      table: 'test.v_host',
+      _dbdef: {
+        table_type: 'view',
+        instead_of_insert: true, // mssql
+      },
+    };
+    var fields = [
+      {name: 'x'},
+    ];
+    var keys = [
+      {name: 'id'},
+    ];
+    var sql_extfields = [];
+    var sql_extvalues = [];
+    var encryptedfields = [];
+    var hashfields = [];
+    var enc_datalockqueries = [];
+    var param_datalocks = [];
+    var dbsql = db.sql.putModelForm(ent, model, fields, keys, sql_extfields, sql_extvalues, encryptedfields, hashfields, enc_datalockqueries, param_datalocks);
+    db.Row('', dbsql.sql, [DB.types.BigInt], {x: 0}, function(err, rslt) {
+      if(err) return done(err);
+      assert.ok(rslt && rslt.id);
+      done(err);
+    });
+  });
+
   describe('updatedable view', function() {
     beforeEach(function(done) {
       db.Command('','insert into test.chair(name) values (\'fixture\')',[],{},function(err,rslt){
-        if(err) console.log(err);
-        return done();
+        return done(err);
       });
     });
     afterEach(function(done) {
       db.Command('','delete from test.chair where name != \'Default Value\'',[],{},function(err,rslt){
-        if(err) console.log(err);
-        return done();
+        return done(err);
       });
     });
 
     it('view is insertable', function(done) {
       db.Command('','insert into test.v_chair(name) values (\'view inserted\')',[],{},function(err,rslt){
-        if(err) console.log(err);
+        if(err) return done(err);
         db.Scalar('','select count(*) from test.chair where name = \'view inserted\'',[],{},function(err,rslt){
-          if(err) console.log(err);
+          if(err) return done(err);
           assert.equal(rslt, 1);
           return done();
         });
@@ -318,7 +345,7 @@ exports = module.exports = function shouldBehaveLikeAnObject(db, timestampIn, ti
 
     it('view insert rowcount with changes', function(done) {
       db.Row('',rowcountSql('insert into test.v_chair(name) values (\'view inserted\')'),[],{},function(err,rslt){
-        if(err) console.log(err);
+        if(err) return done(err);
         assert.equal(rslt.xrowcount, 1)
         return done();
       });
@@ -326,7 +353,7 @@ exports = module.exports = function shouldBehaveLikeAnObject(db, timestampIn, ti
 
     it('view insert rowcount without changes', function(done) {
       db.Row('',rowcountSql('insert into test.v_chair(name) select (\'view inserted\') where 1=0'),[],{},function(err,rslt){
-        if(err) console.log(err);
+        if(err) return done(err);
         assert.equal(rslt.xrowcount, 0)
         return done();
       });
@@ -335,9 +362,9 @@ exports = module.exports = function shouldBehaveLikeAnObject(db, timestampIn, ti
 
     it('view is updateable', function(done) {
       db.Command('','update test.v_chair set name = \'updated\' where name = \'fixture\'',[],{},function(err,rslt){
-        if(err) console.log(err);
+        if(err) return done(err);
         db.Scalar('','select count(*) from test.chair where name = \'updated\'',[],{},function(err,rslt){
-          if(err) console.log(err);
+          if(err) return done(err);
           assert.equal(rslt, 1);
           return done();
         });
@@ -354,7 +381,7 @@ exports = module.exports = function shouldBehaveLikeAnObject(db, timestampIn, ti
 
     it('view update rowcount without changes', function(done) {
       db.Row('',rowcountSql('update test.v_chair set name = \'updated\' where 1=0'),[],{},function(err,rslt){
-        if(err) console.log(err);
+        if(err) return done(err);
         assert.equal(rslt.xrowcount, 0)
         return done();
       });
@@ -364,7 +391,7 @@ exports = module.exports = function shouldBehaveLikeAnObject(db, timestampIn, ti
       db.Command('','delete from test.v_chair where name = \'fixture\'',[],{},function(err,rslt){
         if(err) console.log(err);
         db.Scalar('','select count(*) from test.chair where name = \'fixture\'',[],{},function(err,rslt){
-          if(err) console.log(err);
+          if(err) return done(err);
           assert.equal(rslt, 0);
           return done();
         });
@@ -373,7 +400,7 @@ exports = module.exports = function shouldBehaveLikeAnObject(db, timestampIn, ti
 
     it('view delete rowcount with changes', function(done) {
       db.Row('',rowcountSql('delete from test.v_chair where name = \'fixture\''),[],{},function(err,rslt){
-        if(err) console.log(err);
+        if(err) return done(err);
         assert.equal(rslt.xrowcount, 1)
         return done();
       });
@@ -381,7 +408,7 @@ exports = module.exports = function shouldBehaveLikeAnObject(db, timestampIn, ti
 
     it('view delete rowcount without changes', function(done) {
       db.Row('',rowcountSql('delete from test.v_chair where 1=0'),[],{},function(err,rslt){
-        if(err) console.log(err);
+        if(err) return done(err);
         assert.equal(rslt.xrowcount, 0)
         return done();
       });
