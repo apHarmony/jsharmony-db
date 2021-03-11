@@ -173,7 +173,7 @@ var objects = [
           "with_insert_identity(signatory, id, ",
           "  insert into {schema}.signatory(x) values(0),",
           "  return_insert_key(signatory, id, (id=@@INSERT_ID));",
-          "  update {schema}.witness set reported_insert_id=@@INSERT_ID, reported_last_insert_identity=last_insert_identity()",
+          "  update {schema}.witness set reported_insert_id=@@INSERT_ID, reported_last_insert_identity=(select max(id) from signatory)",
           ")"
         ]]
       }
