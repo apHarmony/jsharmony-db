@@ -21,14 +21,6 @@ var DB = require('../index');
 var assert = require('assert');
 var _ = require('lodash');
 
-function isEmpty(obj) {
-    for(var key in obj) {
-        if(obj.hasOwnProperty(key))
-            return false;
-    }
-    return true;
-}
-
 var dbconfig = { _driver: new DB.noDriver() };
 var db = new DB(dbconfig);
 
@@ -39,16 +31,16 @@ describe('Basic',function(){
   });
   it('ParseSQL', function (done) {
     var sql = db.ParseSQL([
-      "select * from",
-      "TEST"
+      'select * from',
+      'TEST'
     ]);
-    assert((sql=="select * from TEST"),'Success');
+    assert((sql=='select * from TEST'),'Success');
     done();
   });
   it('ParseSQL JSH', function (done) {
     db.SQLExt.Funcs['sample'] = 'select * from TEST';
     var sql = db.ParseSQL('sample');
-    assert((sql=="select * from TEST"),'Success');
+    assert((sql=='select * from TEST'),'Success');
     done();
   });
   it('Util', function (done) {
@@ -57,10 +49,10 @@ describe('Basic',function(){
   });
   it('Log', function (done) {
     var did_log = false;
-    db.platform.Log = function(msg){ did_log = true; }
-    db.platform.Log.info = function(msg){ db.platform.Log(); }
-    db.platform.Log.warning = function(msg){ db.platform.Log(); }
-    db.platform.Log.error = function(msg){ db.platform.Log(); }
+    db.platform.Log = function(msg){ did_log = true; };
+    db.platform.Log.info = function(msg){ db.platform.Log(); };
+    db.platform.Log.warning = function(msg){ db.platform.Log(); };
+    db.platform.Log.error = function(msg){ db.platform.Log(); };
     db.Log('Test Log');
     assert(did_log,'Success');
     done();
@@ -89,7 +81,7 @@ describe('Basic',function(){
       'Tymczak': 'T522',
       'Pfister': 'P236',
       'Honeyman': 'H555',
-    }
+    };
     
     _.each(soundex_tests, function(soundex_expected_result, soundex_test){
       var soundex_result = DB.util.Soundex(soundex_test);
