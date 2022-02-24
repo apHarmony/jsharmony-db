@@ -19,8 +19,10 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
 
 var assert = require('assert');
 var _ = require('lodash');
+var jsh = require('jsharmony');
 
 exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey) {
+  //console.log(db, DB);
   var options = {
     dbconfig: db.dbconfig,
   };
@@ -53,6 +55,65 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey) {
     assert.ok(db);
   });
 
+
+  describe.only('getModelForm', function() {
+    it('can call getModelForm', function() {
+      var model = {
+        table: 'sql_test',
+      };
+      var selecttype = 'unknown';
+      var allfields = [
+        {name: 'name', sqlselect: 'value'},
+        {name: 'other'},
+      ]
+      var sql_allkeyfields = [
+        {name: 'id'},
+      ];
+      var datalockqueries = [];
+      var sortfields = [];
+      var sql = db.sql.getModelForm(jsh, model, selecttype, allfields, sql_allkeyfields, datalockqueries, sortfields);
+      console.log('---', sql);
+      assert(sql.match(/select/i));
+    });
+
+    it('can execute getModelForm', function(done) {
+      var model = {
+        table: 'sql_test',
+      };
+      var selecttype = 'unknown';
+      var allfields = [
+        {name: 'name'},
+      ]
+      var sql_allkeyfields = [
+        {name: 'id'},
+      ];
+      var datalockqueries = [];
+      var sortfields = [];
+      var sql = db.sql.getModelForm(jsh, model, selecttype, allfields, sql_allkeyfields, datalockqueries, sortfields);
+      db.Row('', sql, [DB.types.Int], {id: 1}, done);
+    });
+
+    it.only('can execute getModelForm - multiple', function(done) {
+      var model = {
+        table: 'sql_test',
+      };
+      var selecttype = 'multiple';
+      var allfields = [
+        {name: 'name'},
+      ]
+      var sql_allkeyfields = [];
+      var datalockqueries = [];
+      var sortfields = [
+        {field: 'name', dir: 'asc'}
+      ];
+      var sql = db.sql.getModelForm(jsh, model, selecttype, allfields, sql_allkeyfields, datalockqueries, sortfields);
+      db.Row('', sql, [DB.types.Int], {id: 1}, done);
+    });
+
+    // LOV
+    // jsharmony:models
+  });
+
   describe('putModelForm', function() {
     it('can call putModelForm', function() {
       var ent = {};
@@ -73,7 +134,7 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey) {
       var enc_datalockqueries = [];
       var param_datalocks = [];
       var dbsql = db.sql.putModelForm(ent, model, fields, keys, sql_extfields, sql_extvalues, encryptedfields, hashfields, enc_datalockqueries, param_datalocks);
-      assert(dbsql.sql.match('insert'));
+      assert(dbsql.sql.match(/insert/i));
     });
 
     it('can execute putModelForm', function(done) {
