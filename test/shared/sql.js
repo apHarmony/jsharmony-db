@@ -353,4 +353,47 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey) {
       db.Row('', dbsql.enc_sql, [DB.types.Int, DB.types.VarChar(20)], {id: 1, name: 'name'}, done);
     });
   });
+
+  describe.only('postModelForm', function() {
+    it.only('can call postModelForm', function() {
+      var model = {
+        table: 'sql_test',
+      };
+      var fields = [
+        {name: 'name', sqlselect: 'value'},
+        {name: 'other'},
+      ]
+      var keys = [
+        {name: 'id'},
+      ];
+      var sql_extfields = [];
+      var sql_extvalues = [];
+      var hashfields = [];
+      var param_datalocks = [];
+      var datalockqueries = [];
+      var sql = db.sql.postModelForm(jsh, model, fields, keys, sql_extfields, sql_extvalues, hashfields, param_datalocks, datalockqueries);
+      console.log(sql);
+      assert(sql.match(/update/i));
+    });
+
+    it.only('can execute postModelForm', function(done) {
+      var model = {
+        table: 'sql_test',
+      };
+      var fields = [
+        {name: 'name'},
+      ]
+      var keys = [
+        {name: 'id'},
+      ];
+      var sql_extfields = [];
+      var sql_extvalues = [];
+      var hashfields = [];
+      var param_datalocks = [];
+      var datalockqueries = [];
+      var sql = db.sql.postModelForm(jsh, model, fields, keys, sql_extfields, sql_extvalues, hashfields, param_datalocks, datalockqueries);
+      console.log(sql);
+      db.Row('', sql, [DB.types.Int, DB.types.VarChar(20)], {id: 1, name: 'name'}, done);
+    });
+  });
 }
