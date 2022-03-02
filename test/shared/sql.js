@@ -57,6 +57,86 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey) {
     assert.ok(db);
   });
 
+  describe('getModelRecordset', function() {
+    it('can call getModelRecordset', function() {
+      var model = {
+        table: 'sql_test',
+      };
+      var sql_searchfields = [];
+      var allfields = [
+        {name: 'name', sqlselect: 'value'},
+        {name: 'other'},
+      ]
+      var sortfields = [];
+      var searchfields = [];
+      var datalockqueries = [];
+      var rowstart = 1;
+      var rowcount = 10;
+      var dbsql = db.sql.getModelRecordset(jsh, model, sql_searchfields, allfields, sortfields, searchfields, datalockqueries, rowstart, rowcount);
+      console.log(dbsql);
+      assert(dbsql.sql.match(/select/i));
+    });
+
+    it('can execute getModelRecordset main sql', function(done) {
+      var model = {
+        table: 'sql_test',
+      };
+      var sql_searchfields = [];
+      var allfields = [
+        {name: 'id'},
+        {name: 'name'},
+      ]
+      var sortfields = [];
+      var searchfields = [];
+      var datalockqueries = [];
+      var rowstart = 1;
+      var rowcount = 10;
+      var dbsql = db.sql.getModelRecordset(jsh, model, sql_searchfields, allfields, sortfields, searchfields, datalockqueries, rowstart, rowcount);
+      console.log(dbsql);
+      db.Row('', dbsql.sql, [], {}, done);
+    });
+
+    it('can execute getModelRecordset count sql', function(done) {
+      var model = {
+        table: 'sql_test',
+      };
+      var sql_searchfields = [];
+      var allfields = [
+        {name: 'id'},
+        {name: 'name'},
+      ]
+      var sortfields = [];
+      var searchfields = [];
+      var datalockqueries = [];
+      var rowstart = 1;
+      var rowcount = 10;
+      var dbsql = db.sql.getModelRecordset(jsh, model, sql_searchfields, allfields, sortfields, searchfields, datalockqueries, rowstart, rowcount);
+      console.log(dbsql);
+      db.Row('', dbsql.rowcount_sql, [], {}, done);
+    });
+
+    it('can execute getModelRecordset with search', function(done) {
+      var model = {
+        table: 'sql_test',
+      };
+      var sql_searchfields = [];
+      var allfields = [
+        {name: 'id'},
+        {name: 'name'},
+      ]
+      var sortfields = [];
+      var searchfields = ['name = \'foo\''];
+      var datalockqueries = [];
+      var rowstart = 1;
+      var rowcount = 10;
+      var dbsql = db.sql.getModelRecordset(jsh, model, sql_searchfields, allfields, sortfields, searchfields, datalockqueries, rowstart, rowcount);
+      console.log(dbsql);
+      db.Row('', dbsql.sql, [], {}, done);
+    });
+
+    // LOV
+
+  });
 
   describe('getModelForm', function() {
     it('can call getModelForm', function() {
