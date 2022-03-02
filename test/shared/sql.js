@@ -19,7 +19,9 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
 
 var assert = require('assert');
 var _ = require('lodash');
-var jsh = require('jsharmony');
+var jsHarmony = require('jsharmony');
+
+var jsh = new jsHarmony({});
 
 exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey) {
   //console.log(db, DB);
@@ -56,7 +58,7 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey) {
   });
 
 
-  describe.only('getModelForm', function() {
+  describe('getModelForm', function() {
     it('can call getModelForm', function() {
       var model = {
         table: 'sql_test',
@@ -72,7 +74,7 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey) {
       var datalockqueries = [];
       var sortfields = [];
       var sql = db.sql.getModelForm(jsh, model, selecttype, allfields, sql_allkeyfields, datalockqueries, sortfields);
-      console.log('---', sql);
+      console.log(sql);
       assert(sql.match(/select/i));
     });
 
@@ -93,7 +95,7 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey) {
       db.Row('', sql, [DB.types.Int], {id: 1}, done);
     });
 
-    it.only('can execute getModelForm - multiple', function(done) {
+    it('can execute getModelForm - multiple', function(done) {
       var model = {
         table: 'sql_test',
       };
@@ -116,7 +118,6 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey) {
 
   describe('putModelForm', function() {
     it('can call putModelForm', function() {
-      var ent = {};
       var model = {
         table: 'sql_test',
       };
@@ -133,12 +134,12 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey) {
       var hashfields = [];
       var enc_datalockqueries = [];
       var param_datalocks = [];
-      var dbsql = db.sql.putModelForm(ent, model, fields, keys, sql_extfields, sql_extvalues, encryptedfields, hashfields, enc_datalockqueries, param_datalocks);
+      var dbsql = db.sql.putModelForm(jsh, model, fields, keys, sql_extfields, sql_extvalues, encryptedfields, hashfields, enc_datalockqueries, param_datalocks);
+      console.log(dbsql);
       assert(dbsql.sql.match(/insert/i));
     });
 
     it('can execute putModelForm', function(done) {
-      var ent = {};
       var model = {
         table: 'sql_test',
       };
@@ -154,12 +155,12 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey) {
       var hashfields = [];
       var enc_datalockqueries = [];
       var param_datalocks = [];
-      var dbsql = db.sql.putModelForm(ent, model, fields, keys, sql_extfields, sql_extvalues, encryptedfields, hashfields, enc_datalockqueries, param_datalocks);
+      var dbsql = db.sql.putModelForm(jsh, model, fields, keys, sql_extfields, sql_extvalues, encryptedfields, hashfields, enc_datalockqueries, param_datalocks);
+      console.log(dbsql);
       db.Row('', dbsql.sql, [DB.types.VarChar(20)], {name: 'name'}, done);
     });
 
     it('returns the new id', function(done) {
-      var ent = {};
       var model = {
         table: 'sql_test',
       };
@@ -175,15 +176,16 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey) {
       var hashfields = [];
       var enc_datalockqueries = [];
       var param_datalocks = [];
-      var dbsql = db.sql.putModelForm(ent, model, fields, keys, sql_extfields, sql_extvalues, encryptedfields, hashfields, enc_datalockqueries, param_datalocks);
+      var dbsql = db.sql.putModelForm(jsh, model, fields, keys, sql_extfields, sql_extvalues, encryptedfields, hashfields, enc_datalockqueries, param_datalocks);
+      console.log(dbsql);
       db.Row('', dbsql.sql, [DB.types.VarChar(20)], {name: 'name'}, function(err, rslt) {
+        console.log(err, rslt);
         assert.ok(rslt && rslt.id);
         done(err);
       });
     });
 
     it('uses sqlgetinsertkeys', function() {
-      var ent = {};
       var model = {
         table: 'sql_test',
         sqlgetinsertkeys: 'select 1',
@@ -201,7 +203,7 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey) {
       var hashfields = [];
       var enc_datalockqueries = [];
       var param_datalocks = [];
-      var dbsql = db.sql.putModelForm(ent, model, fields, keys, sql_extfields, sql_extvalues, encryptedfields, hashfields, enc_datalockqueries, param_datalocks);
+      var dbsql = db.sql.putModelForm(jsh, model, fields, keys, sql_extfields, sql_extvalues, encryptedfields, hashfields, enc_datalockqueries, param_datalocks);
       assert(dbsql.sql.match(model.sqlgetinsertkeys));
     });
 
@@ -225,6 +227,130 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey) {
       var param_datalocks = [];
       var dbsql = db.sql.putModelForm(ent, model, fields, keys, sql_extfields, sql_extvalues, encryptedfields, hashfields, enc_datalockqueries, param_datalocks);
       db.Row('', dbsql.sql, [DB.types.VarChar(20)], {name: 'name'}, done);
+    });
+
+    it('uses datalocks', function() {
+      var model = {
+        table: 'sql_test',
+      };
+      var fields = [
+        {name: 'name'},
+      ];
+      var keys = [
+        {name: 'id'},
+      ];
+      var sql_extfields = [];
+      var sql_extvalues = [];
+      var encryptedfields = [];
+      var hashfields = [];
+      var enc_datalockqueries = [];
+      var param_datalocks = [
+        {
+          field: { type: DB.types.Int, sql_to_db: '1' },
+          pname: 'id',
+          datalockquery: 'id IN (SELECT id FROM sql_test WHERE id=@datalock_id',
+        }
+      ];
+      var dbsql = db.sql.putModelForm(jsh, model, fields, keys, sql_extfields, sql_extvalues, encryptedfields, hashfields, enc_datalockqueries, param_datalocks);
+      console.log(dbsql);
+      assert(dbsql.sql.match('datalock_id'));
+    });
+
+    it('can execute with datalocks', function(done) {
+      var model = {
+        table: 'sql_test',
+      };
+      var fields = [
+        {name: 'name'},
+      ];
+      var keys = [
+        {name: 'id'},
+      ];
+      var sql_extfields = [];
+      var sql_extvalues = [];
+      var encryptedfields = [];
+      var hashfields = [];
+      var enc_datalockqueries = [];
+      var param_datalocks = [
+        {
+          field: { type: DB.types.Int, sql_to_db: '1' },
+          pname: 'id',
+          datalockquery: 'id IN (SELECT id FROM sql_test WHERE id=@datalock_id)',
+        }
+      ];
+      var dbsql = db.sql.putModelForm(jsh, model, fields, keys, sql_extfields, sql_extvalues, encryptedfields, hashfields, enc_datalockqueries, param_datalocks);
+      console.log(dbsql);
+      db.Row('', dbsql.sql, [DB.types.VarChar(20), DB.types.Int], {name: 'name', datalock_id: 1}, function(err, rslt){
+        assert.equal(err&&err.message, 'INVALID ACCESS', 'raised a signal');
+        done();
+      });
+    });
+
+    it('uses encrypted fields', function() {
+      var model = {
+        table: 'sql_test',
+      };
+      var fields = [
+      ];
+      var keys = [
+        {name: 'id'},
+      ];
+      var sql_extfields = [];
+      var sql_extvalues = [];
+      var encryptedfields = [
+        {name: 'name'},
+      ];
+      var hashfields = [];
+      var enc_datalockqueries = [];
+      var param_datalocks = [];
+      var dbsql = db.sql.putModelForm(jsh, model, fields, keys, sql_extfields, sql_extvalues, encryptedfields, hashfields, enc_datalockqueries, param_datalocks);
+      console.log(dbsql);
+      assert(dbsql.enc_sql.match('name'));
+    });
+
+    it('uses hash fields', function() {
+      var model = {
+        table: 'sql_test',
+      };
+      var fields = [
+      ];
+      var keys = [
+        {name: 'id'},
+      ];
+      var sql_extfields = [];
+      var sql_extvalues = [];
+      var encryptedfields = [];
+      var hashfields = [
+        {name: 'name'},
+      ];
+      var enc_datalockqueries = [];
+      var param_datalocks = [];
+      var dbsql = db.sql.putModelForm(jsh, model, fields, keys, sql_extfields, sql_extvalues, encryptedfields, hashfields, enc_datalockqueries, param_datalocks);
+      console.log(dbsql);
+      assert(dbsql.enc_sql.match('name'));
+    });
+
+    it('executes encrypted fields', function(done) {
+      var model = {
+        table: 'sql_test',
+      };
+      var fields = [
+        {name: 'name'},
+      ];
+      var keys = [
+        {name: 'id'},
+      ];
+      var sql_extfields = [];
+      var sql_extvalues = [];
+      var encryptedfields = [
+        {name: 'name'},
+      ];
+      var hashfields = [];
+      var enc_datalockqueries = [];
+      var param_datalocks = [];
+      var dbsql = db.sql.putModelForm(jsh, model, fields, keys, sql_extfields, sql_extvalues, encryptedfields, hashfields, enc_datalockqueries, param_datalocks);
+      console.log(dbsql);
+      db.Row('', dbsql.enc_sql, [DB.types.Int, DB.types.VarChar(20)], {id: 1, name: 'name'}, done);
     });
   });
 }
