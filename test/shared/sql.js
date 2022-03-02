@@ -116,6 +116,32 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey) {
     // jsharmony:models
   });
 
+  describe('getDefaultTasks', function() {
+    it('can call getDefaultTasks', function() {
+      var dflt_sql_fields = [
+        {
+          field: {name: 'name'},
+          sql: '\'value\'',
+        }
+      ];
+      var sql = db.sql.getDefaultTasks(jsh, dflt_sql_fields);
+      console.log(sql);
+      assert(sql.match(/select/i));
+    });
+
+    it('can execute getDefaultTasks', function(done) {
+      var dflt_sql_fields = [
+        {
+          field: {name: 'name'},
+          sql: '\'value\'',
+        }
+      ];
+      var sql = db.sql.getDefaultTasks(jsh, dflt_sql_fields);
+      console.log(sql);
+      db.Row('', sql, [], {}, done);
+    });
+  });
+
   describe('putModelForm', function() {
     it('can call putModelForm', function() {
       var model = {
@@ -354,8 +380,8 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey) {
     });
   });
 
-  describe.only('postModelForm', function() {
-    it.only('can call postModelForm', function() {
+  describe('postModelForm', function() {
+    it('can call postModelForm', function() {
       var model = {
         table: 'sql_test',
       };
@@ -376,7 +402,7 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey) {
       assert(sql.match(/update/i));
     });
 
-    it.only('can execute postModelForm', function(done) {
+    it('can execute postModelForm', function(done) {
       var model = {
         table: 'sql_test',
       };
