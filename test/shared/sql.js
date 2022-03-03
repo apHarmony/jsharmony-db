@@ -25,6 +25,8 @@ var jsh = new jsHarmony({});
 jsh.map.code_txt = 'code_txt';
 jsh.map.code_val = 'code_val';
 jsh.map.code_parent = 'code_parent';
+jsh.map.code_end_date = 'code_end_date';
+jsh.map.code_seq = 'code_val';
 jsh.map.code = 'code';
 jsh.map.code2 = 'code2';
 jsh.map.code_sys = 'code';
@@ -32,7 +34,7 @@ jsh.map.code2_sys = 'code2';
 jsh.map.code_app = 'code';
 jsh.map.code2_app = 'code2';
 
-exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey) {
+exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, timestampType) {
   //console.log(db, DB);
   var options = {
     dbconfig: db.dbconfig,
@@ -201,7 +203,6 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey) {
       db.Row('', sql, [DB.types.Int], {id: 1}, done);
     });
 
-    // LOV
     // jsharmony:models
   });
 
@@ -566,215 +567,371 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey) {
     });
   });
 
-  describe('getLOVFieldTxt', function() {
+  describe('LOV', function() {
     before(function(done) {
-      db.Command('', 'drop table if exists code_test; create table code_test ("code_val" varchar(20), "code_txt" varchar(20)); drop table if exists code2_test; create table code2_test ("code_val1" varchar(20), "code_val2" varchar(20), "code_txt" varchar(20));', [], {}, done);
+      if (!timestampType) {
+        throw "Please pass a timestampType to shouldGenerateFormSql"
+      }
+      db.Command('', 'drop table if exists code_test; create table code_test ("code_val" varchar(20), "code_txt" varchar(20), "code_end_date" '+timestampType+'); drop table if exists code2_test; create table code2_test ("code_val1" varchar(20), "code_val2" varchar(20), "code_txt" varchar(20), "code_end_date" '+timestampType+');', [], {}, done);
     });
   
     after(function(done) {
       db.Command('', 'drop table code_test; drop table code2_test;', [], {}, done);
     });
-    
-    it('can execute getLOVFieldTxt - noop', function(done) {
-      var model = {
-        table: 'sql_test',
-      };
-      var field = {
-        name: 'id',
-        lov: {},
-      };
-      var sql = db.sql.getLOVFieldTxt(jsh, model, field);
-      console.log(sql);
-      db.Row('', sql, [], {}, done);
-    });
 
-    it('can execute getLOVFieldTxt - values', function(done) {
-      var model = {
-        table: 'sql_test',
-      };
-      var field = {
-        name: 'id',
-        sqlselect: "'ACTIVE'",
-        lov: {
-          values: [
-            { "code_val": "ACTIVE", "code_txt": "Active" },
-            { "code_val": "CLOSED", "code_txt": "Closed" },
-          ]
-        }
-      };
-      var sql = db.sql.getLOVFieldTxt(jsh, model, field);
-      console.log(sql);
-      db.Row('', sql, [], {}, done);
-    });
+    describe.only('getLOV', function() {
+      it('can execute getLOV - noop', function(done) {
+        var fname = 'id';
+        var lov = {};
+        var datalockqueries = [];
+        var param_datalocks = [];
+        var options = {};
+        var sql = db.sql.getLOV(jsh, fname, lov, datalockqueries, param_datalocks, options);
+        console.log(sql);
+        db.Row('', sql, [], {}, done);
+      });
 
-    itn('can execute getLOVFieldTxt - values parent', function(done) {
-      var model = {
-        table: 'sql_test',
-        "fields":[
-          {
-            "name":"Make",
-            "sqlselect": "'FORD'",
-            "lov":{
-              "values":[
-                { "code_val": "FORD", "code_txt": "Ford" },
-                { "code_val": "TOYOTA", "code_txt": "Toyota" }
-              ]
-            }
-          },
-          {
-            "name":"Model",
-            "sqlselect":"'FORD_F150'",
-            "lov":{
-              "parent":"Make",
-              "values":[
-                { "code_val1": "FORD", "code_val2": "FORD_F150", "code_txt": "F150" },
-                { "code_val1": "FORD", "code_val2": "FORD_MUSTANG", "code_txt": "Mustang" },
-                { "code_val1": "TOYOTA", "code_val2": "TOYOTA_COROLLA", "code_txt": "Corolla" },
-                { "code_val1": "TOYOTA", "code_val2": "TOYOTA_CAMRY", "code_txt": "Camry" },
-                { "code_val1": "TOYOTA", "code_val2": "TOYOTA_AVALON", "code_txt": "Avalon" }
-              ]
-            }
-          }
-        ]
-      };
-      var field = model.fields[1];
-      var sql = db.sql.getLOVFieldTxt(jsh, model, field);
-      console.log(sql);
-      db.Row('', sql, [], {}, done);
-    });
+      it('can execute getLOV - sql', function(done) {
+        var fname = 'id';
+        var lov = {
+          sql: 'SELECT * FROM code_test;'
+        };
+        var datalockqueries = [];
+        var param_datalocks = [];
+        var options = {};
+        var sql = db.sql.getLOV(jsh, fname, lov, datalockqueries, param_datalocks, options);
+        console.log(sql);
+        db.Row('', sql, [], {}, done);
+      });
 
-    it('can execute getLOVFieldTxt - sqlselect', function(done) {
-      var model = {
-        table: 'sql_test',
-      };
-      var field = {
-        name: 'id',
-        sqlselect: "'ACTIVE'",
-        lov: {
-          sqlselect: 'SELECT ID "code_val", NAME "code_txt" FROM SQL_TEST'
-        }
-      };
-      var sql = db.sql.getLOVFieldTxt(jsh, model, field);
-      console.log(sql);
-      db.Row('', sql, [], {}, done);
-    });
+      it('can execute getLOV - sql2', function(done) {
+        var fname = 'id';
+        var lov = {
+          sql2: 'SELECT * FROM code2_test;'
+        };
+        var datalockqueries = [];
+        var param_datalocks = [];
+        var options = {};
+        var sql = db.sql.getLOV(jsh, fname, lov, datalockqueries, param_datalocks, options);
+        console.log(sql);
+        db.Row('', sql, [], {}, done);
+      });
 
-    it('can execute getLOVFieldTxt - code', function(done) {
-      var model = {
-        table: 'sql_test',
-      };
-      var field = {
-        name: 'name',
-        sqlselect: "'ACTIVE'",
-        lov: {
+      it('can execute getLOV - sqlmp', function(done) {
+        var fname = 'id';
+        var lov = {
+          sqlmp: 'SELECT * FROM code2_test;'
+        };
+        var datalockqueries = [];
+        var param_datalocks = [];
+        var options = {};
+        var sql = db.sql.getLOV(jsh, fname, lov, datalockqueries, param_datalocks, options);
+        console.log(sql);
+        db.Row('', sql, [], {}, done);
+      });
+
+      it('can execute getLOV - code', function(done) {
+        var fname = 'id';
+        var lov = {
           code: 'test'
-        }
-      };
-      var sql = db.sql.getLOVFieldTxt(jsh, model, field);
-      console.log(sql);
-      db.Row('', sql, [], {}, done);
-    });
+        };
+        var datalockqueries = [];
+        var param_datalocks = [];
+        var options = {};
+        var sql = db.sql.getLOV(jsh, fname, lov, datalockqueries, param_datalocks, options);
+        console.log(sql);
+        db.Row('', sql, [], {}, done);
+      });
 
-    it('can execute getLOVFieldTxt - code2', function(done) {
-      var model = {
-        table: 'sql_test',
-        fields: [
-          {
-            name: 'other',
-            sqlselect: "'other'",
-          }
-        ]
-      };
-      var field = {
-        name: 'name',
-        sqlselect: "'ACTIVE'",
-        lov: {
-          parent: 'other',
+      it('can execute getLOV - code2', function(done) {
+        var fname = 'id';
+        var lov = {
           code2: 'test'
-        }
-      };
-      var sql = db.sql.getLOVFieldTxt(jsh, model, field);
-      console.log(sql);
-      db.Row('', sql, [], {}, done);
-    });
+        };
+        var datalockqueries = [];
+        var param_datalocks = [];
+        var options = {};
+        var sql = db.sql.getLOV(jsh, fname, lov, datalockqueries, param_datalocks, options);
+        console.log(sql);
+        db.Row('', sql, [], {}, done);
+      });
 
-    it('can execute getLOVFieldTxt - code_sys', function(done) {
-      var model = {
-        table: 'sql_test',
-      };
-      var field = {
-        name: 'name',
-        sqlselect: "'ACTIVE'",
-        lov: {
+      it('can execute getLOV - code_sys', function(done) {
+        var fname = 'id';
+        var lov = {
           code_sys: 'test'
-        }
-      };
-      var sql = db.sql.getLOVFieldTxt(jsh, model, field);
-      console.log(sql);
-      db.Row('', sql, [], {}, done);
-    });
+        };
+        var datalockqueries = [];
+        var param_datalocks = [];
+        var options = {};
+        var sql = db.sql.getLOV(jsh, fname, lov, datalockqueries, param_datalocks, options);
+        console.log(sql);
+        db.Row('', sql, [], {}, done);
+      });
 
-    it('can execute getLOVFieldTxt - code2_sys', function(done) {
-      var model = {
-        table: 'sql_test',
-        fields: [
-          {
-            name: 'other',
-            sqlselect: "'other'",
-          }
-        ]
-      };
-      var field = {
-        name: 'name',
-        sqlselect: "'ACTIVE'",
-        lov: {
-          parent: 'other',
+      it('can execute getLOV - code2_sys', function(done) {
+        var fname = 'id';
+        var lov = {
           code2_sys: 'test'
-        }
-      };
-      var sql = db.sql.getLOVFieldTxt(jsh, model, field);
-      console.log(sql);
-      db.Row('', sql, [], {}, done);
-    });
+        };
+        var datalockqueries = [];
+        var param_datalocks = [];
+        var options = {};
+        var sql = db.sql.getLOV(jsh, fname, lov, datalockqueries, param_datalocks, options);
+        console.log(sql);
+        db.Row('', sql, [], {}, done);
+      });
 
-    it('can execute getLOVFieldTxt - code_app', function(done) {
-      var model = {
-        table: 'sql_test',
-      };
-      var field = {
-        name: 'name',
-        sqlselect: "'ACTIVE'",
-        lov: {
+      it('can execute getLOV - code_app', function(done) {
+        var fname = 'id';
+        var lov = {
           code_app: 'test'
-        }
-      };
-      var sql = db.sql.getLOVFieldTxt(jsh, model, field);
-      console.log(sql);
-      db.Row('', sql, [], {}, done);
-    });
+        };
+        var datalockqueries = [];
+        var param_datalocks = [];
+        var options = {};
+        var sql = db.sql.getLOV(jsh, fname, lov, datalockqueries, param_datalocks, options);
+        console.log(sql);
+        db.Row('', sql, [], {}, done);
+      });
 
-    it('can execute getLOVFieldTxt - code2_app', function(done) {
-      var model = {
-        table: 'sql_test',
-        fields: [
-          {
-            name: 'other',
-            sqlselect: "'other'",
-          }
-        ]
-      };
-      var field = {
-        name: 'name',
-        sqlselect: "'ACTIVE'",
-        lov: {
-          parent: 'other',
+      it('can execute getLOV - code2_app', function(done) {
+        var fname = 'id';
+        var lov = {
           code2_app: 'test'
-        }
-      };
-      var sql = db.sql.getLOVFieldTxt(jsh, model, field);
-      console.log(sql);
-      db.Row('', sql, [], {}, done);
+        };
+        var datalockqueries = [];
+        var param_datalocks = [];
+        var options = {};
+        var sql = db.sql.getLOV(jsh, fname, lov, datalockqueries, param_datalocks, options);
+        console.log(sql);
+        db.Row('', sql, [], {}, done);
+      });
+
+      it('can execute getLOV - with datalock', function(done) {
+        var fname = 'id';
+        var lov = {
+          code: 'test'
+        };
+        var datalockqueries = [];
+        var param_datalocks = [
+          {
+            field: { type: DB.types.Int, sql_to_db: '1' },
+            pname: 'id',
+            datalockquery: 'id IN (SELECT id FROM sql_test WHERE id=@datalock_id)',
+          }
+        ];
+        var options = {};
+        var sql = db.sql.getLOV(jsh, fname, lov, datalockqueries, param_datalocks, options);
+        console.log(sql);
+        db.Row('', sql, [DB.types.Int], {datalock_id: 1}, function(err, rslt){
+          assert.equal(err&&err.message, 'INVALID ACCESS', 'raised a signal');
+          done();
+        });
+      });
     });
 
+    describe('getLOVFieldTxt', function() {
+      it('can execute getLOVFieldTxt - noop', function(done) {
+        var model = {
+          table: 'sql_test',
+        };
+        var field = {
+          name: 'id',
+          lov: {},
+        };
+        var sql = db.sql.getLOVFieldTxt(jsh, model, field);
+        console.log(sql);
+        db.Row('', sql, [], {}, done);
+      });
+
+      it('can execute getLOVFieldTxt - values', function(done) {
+        var model = {
+          table: 'sql_test',
+        };
+        var field = {
+          name: 'id',
+          sqlselect: "'ACTIVE'",
+          lov: {
+            values: [
+              { "code_val": "ACTIVE", "code_txt": "Active" },
+              { "code_val": "CLOSED", "code_txt": "Closed" },
+            ]
+          }
+        };
+        var sql = db.sql.getLOVFieldTxt(jsh, model, field);
+        console.log(sql);
+        db.Row('', sql, [], {}, done);
+      });
+
+      it('can execute getLOVFieldTxt - values parent', function(done) {
+        var model = {
+          table: 'sql_test',
+          "fields":[
+            {
+              "name":"Make",
+              "sqlselect": "'FORD'",
+              "lov":{
+                "values":[
+                  { "code_val": "FORD", "code_txt": "Ford" },
+                  { "code_val": "TOYOTA", "code_txt": "Toyota" }
+                ]
+              }
+            },
+            {
+              "name":"Model",
+              "sqlselect":"'FORD_F150'",
+              "lov":{
+                "parent":"Make",
+                "values":[
+                  { "code_val1": "FORD", "code_val2": "FORD_F150", "code_txt": "F150" },
+                  { "code_val1": "FORD", "code_val2": "FORD_MUSTANG", "code_txt": "Mustang" },
+                  { "code_val1": "TOYOTA", "code_val2": "TOYOTA_COROLLA", "code_txt": "Corolla" },
+                  { "code_val1": "TOYOTA", "code_val2": "TOYOTA_CAMRY", "code_txt": "Camry" },
+                  { "code_val1": "TOYOTA", "code_val2": "TOYOTA_AVALON", "code_txt": "Avalon" }
+                ]
+              }
+            }
+          ]
+        };
+        var field = model.fields[1];
+        var sql = db.sql.getLOVFieldTxt(jsh, model, field);
+        console.log(sql);
+        db.Row('', sql, [], {}, done);
+      });
+
+      it('can execute getLOVFieldTxt - sqlselect', function(done) {
+        var model = {
+          table: 'sql_test',
+        };
+        var field = {
+          name: 'id',
+          sqlselect: "'ACTIVE'",
+          lov: {
+            sqlselect: 'SELECT ID "code_val", NAME "code_txt" FROM SQL_TEST'
+          }
+        };
+        var sql = db.sql.getLOVFieldTxt(jsh, model, field);
+        console.log(sql);
+        db.Row('', sql, [], {}, done);
+      });
+
+      it('can execute getLOVFieldTxt - code', function(done) {
+        var model = {
+          table: 'sql_test',
+        };
+        var field = {
+          name: 'name',
+          sqlselect: "'ACTIVE'",
+          lov: {
+            code: 'test'
+          }
+        };
+        var sql = db.sql.getLOVFieldTxt(jsh, model, field);
+        console.log(sql);
+        db.Row('', sql, [], {}, done);
+      });
+
+      it('can execute getLOVFieldTxt - code2', function(done) {
+        var model = {
+          table: 'sql_test',
+          fields: [
+            {
+              name: 'other',
+              sqlselect: "'other'",
+            }
+          ]
+        };
+        var field = {
+          name: 'name',
+          sqlselect: "'ACTIVE'",
+          lov: {
+            parent: 'other',
+            code2: 'test'
+          }
+        };
+        var sql = db.sql.getLOVFieldTxt(jsh, model, field);
+        console.log(sql);
+        db.Row('', sql, [], {}, done);
+      });
+
+      it('can execute getLOVFieldTxt - code_sys', function(done) {
+        var model = {
+          table: 'sql_test',
+        };
+        var field = {
+          name: 'name',
+          sqlselect: "'ACTIVE'",
+          lov: {
+            code_sys: 'test'
+          }
+        };
+        var sql = db.sql.getLOVFieldTxt(jsh, model, field);
+        console.log(sql);
+        db.Row('', sql, [], {}, done);
+      });
+
+      it('can execute getLOVFieldTxt - code2_sys', function(done) {
+        var model = {
+          table: 'sql_test',
+          fields: [
+            {
+              name: 'other',
+              sqlselect: "'other'",
+            }
+          ]
+        };
+        var field = {
+          name: 'name',
+          sqlselect: "'ACTIVE'",
+          lov: {
+            parent: 'other',
+            code2_sys: 'test'
+          }
+        };
+        var sql = db.sql.getLOVFieldTxt(jsh, model, field);
+        console.log(sql);
+        db.Row('', sql, [], {}, done);
+      });
+
+      it('can execute getLOVFieldTxt - code_app', function(done) {
+        var model = {
+          table: 'sql_test',
+        };
+        var field = {
+          name: 'name',
+          sqlselect: "'ACTIVE'",
+          lov: {
+            code_app: 'test'
+          }
+        };
+        var sql = db.sql.getLOVFieldTxt(jsh, model, field);
+        console.log(sql);
+        db.Row('', sql, [], {}, done);
+      });
+
+      it('can execute getLOVFieldTxt - code2_app', function(done) {
+        var model = {
+          table: 'sql_test',
+          fields: [
+            {
+              name: 'other',
+              sqlselect: "'other'",
+            }
+          ]
+        };
+        var field = {
+          name: 'name',
+          sqlselect: "'ACTIVE'",
+          lov: {
+            parent: 'other',
+            code2_app: 'test'
+          }
+        };
+        var sql = db.sql.getLOVFieldTxt(jsh, model, field);
+        console.log(sql);
+        db.Row('', sql, [], {}, done);
+      });
+    });
   });
 }
