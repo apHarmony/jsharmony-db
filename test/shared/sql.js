@@ -502,4 +502,33 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey) {
       db.Row('', sql, [DB.types.Int, DB.types.VarChar(20)], {id: 1, name: 'name'}, done);
     });
   });
+
+  describe('deleteModelForm', function() {
+    it('can call deleteModelForm', function() {
+      var model = {
+        table: 'sql_test',
+      };
+      var keys = [
+        {name: 'id'},
+      ];
+      var datalockqueries = [];
+      var sql = db.sql.deleteModelForm(jsh, model, keys, datalockqueries);
+      console.log(sql);
+      assert(sql.match(/delete/i));
+    });
+
+    it('can execute deleteModelForm', function(done) {
+      var model = {
+        table: 'sql_test',
+      };
+      var keys = [
+        {name: 'id'},
+      ];
+      var datalockqueries = [];
+      var sql = db.sql.deleteModelForm(jsh, model, keys, datalockqueries);
+      console.log(sql);
+      db.Row('', sql, [DB.types.Int], {id: 1}, done);
+    });
+  });
+
 }
