@@ -503,6 +503,32 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey) {
     });
   });
 
+  describe('postModelExec', function() {
+    it('can call postModelExec', function() {
+      var model = {
+        table: 'sql_test',
+        sqlexec: 'select * from sql_test',
+      };
+      var param_datalocks = [];
+      var datalockqueries = [];
+      var sql = db.sql.postModelExec(jsh, model, param_datalocks, datalockqueries);
+      console.log(sql);
+      assert(sql.match(/select/i));
+    });
+
+    it('can execute postModelExec', function(done) {
+      var model = {
+        table: 'sql_test',
+        sqlexec: 'select * from sql_test',
+      };
+      var param_datalocks = [];
+      var datalockqueries = [];
+      var sql = db.sql.postModelExec(jsh, model, param_datalocks, datalockqueries);
+      console.log(sql);
+      db.Row('', sql, [], {}, done);
+    });
+  });
+
   describe('deleteModelForm', function() {
     it('can call deleteModelForm', function() {
       var model = {
