@@ -22,6 +22,15 @@ var _ = require('lodash');
 var jsHarmony = require('jsharmony');
 
 var jsh = new jsHarmony({});
+jsh.map.code_txt = 'code_txt';
+jsh.map.code_val = 'code_val';
+jsh.map.code_parent = 'code_parent';
+jsh.map.code = 'code';
+jsh.map.code2 = 'code2';
+jsh.map.code_sys = 'code';
+jsh.map.code2_sys = 'code2';
+jsh.map.code_app = 'code';
+jsh.map.code2_app = 'code2';
 
 exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey) {
   //console.log(db, DB);
@@ -557,4 +566,215 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey) {
     });
   });
 
+  describe('getLOVFieldTxt', function() {
+    before(function(done) {
+      db.Command('', 'drop table if exists code_test; create table code_test ("code_val" varchar(20), "code_txt" varchar(20)); drop table if exists code2_test; create table code2_test ("code_val1" varchar(20), "code_val2" varchar(20), "code_txt" varchar(20));', [], {}, done);
+    });
+  
+    after(function(done) {
+      db.Command('', 'drop table code_test; drop table code2_test;', [], {}, done);
+    });
+    
+    it('can execute getLOVFieldTxt - noop', function(done) {
+      var model = {
+        table: 'sql_test',
+      };
+      var field = {
+        name: 'id',
+        lov: {},
+      };
+      var sql = db.sql.getLOVFieldTxt(jsh, model, field);
+      console.log(sql);
+      db.Row('', sql, [], {}, done);
+    });
+
+    it('can execute getLOVFieldTxt - values', function(done) {
+      var model = {
+        table: 'sql_test',
+      };
+      var field = {
+        name: 'id',
+        sqlselect: "'ACTIVE'",
+        lov: {
+          values: [
+            { "code_val": "ACTIVE", "code_txt": "Active" },
+            { "code_val": "CLOSED", "code_txt": "Closed" },
+          ]
+        }
+      };
+      var sql = db.sql.getLOVFieldTxt(jsh, model, field);
+      console.log(sql);
+      db.Row('', sql, [], {}, done);
+    });
+
+    itn('can execute getLOVFieldTxt - values parent', function(done) {
+      var model = {
+        table: 'sql_test',
+        "fields":[
+          {
+            "name":"Make",
+            "sqlselect": "'FORD'",
+            "lov":{
+              "values":[
+                { "code_val": "FORD", "code_txt": "Ford" },
+                { "code_val": "TOYOTA", "code_txt": "Toyota" }
+              ]
+            }
+          },
+          {
+            "name":"Model",
+            "sqlselect":"'FORD_F150'",
+            "lov":{
+              "parent":"Make",
+              "values":[
+                { "code_val1": "FORD", "code_val2": "FORD_F150", "code_txt": "F150" },
+                { "code_val1": "FORD", "code_val2": "FORD_MUSTANG", "code_txt": "Mustang" },
+                { "code_val1": "TOYOTA", "code_val2": "TOYOTA_COROLLA", "code_txt": "Corolla" },
+                { "code_val1": "TOYOTA", "code_val2": "TOYOTA_CAMRY", "code_txt": "Camry" },
+                { "code_val1": "TOYOTA", "code_val2": "TOYOTA_AVALON", "code_txt": "Avalon" }
+              ]
+            }
+          }
+        ]
+      };
+      var field = model.fields[1];
+      var sql = db.sql.getLOVFieldTxt(jsh, model, field);
+      console.log(sql);
+      db.Row('', sql, [], {}, done);
+    });
+
+    it('can execute getLOVFieldTxt - sqlselect', function(done) {
+      var model = {
+        table: 'sql_test',
+      };
+      var field = {
+        name: 'id',
+        sqlselect: "'ACTIVE'",
+        lov: {
+          sqlselect: 'SELECT ID "code_val", NAME "code_txt" FROM SQL_TEST'
+        }
+      };
+      var sql = db.sql.getLOVFieldTxt(jsh, model, field);
+      console.log(sql);
+      db.Row('', sql, [], {}, done);
+    });
+
+    it('can execute getLOVFieldTxt - code', function(done) {
+      var model = {
+        table: 'sql_test',
+      };
+      var field = {
+        name: 'name',
+        sqlselect: "'ACTIVE'",
+        lov: {
+          code: 'test'
+        }
+      };
+      var sql = db.sql.getLOVFieldTxt(jsh, model, field);
+      console.log(sql);
+      db.Row('', sql, [], {}, done);
+    });
+
+    it('can execute getLOVFieldTxt - code2', function(done) {
+      var model = {
+        table: 'sql_test',
+        fields: [
+          {
+            name: 'other',
+            sqlselect: "'other'",
+          }
+        ]
+      };
+      var field = {
+        name: 'name',
+        sqlselect: "'ACTIVE'",
+        lov: {
+          parent: 'other',
+          code2: 'test'
+        }
+      };
+      var sql = db.sql.getLOVFieldTxt(jsh, model, field);
+      console.log(sql);
+      db.Row('', sql, [], {}, done);
+    });
+
+    it('can execute getLOVFieldTxt - code_sys', function(done) {
+      var model = {
+        table: 'sql_test',
+      };
+      var field = {
+        name: 'name',
+        sqlselect: "'ACTIVE'",
+        lov: {
+          code_sys: 'test'
+        }
+      };
+      var sql = db.sql.getLOVFieldTxt(jsh, model, field);
+      console.log(sql);
+      db.Row('', sql, [], {}, done);
+    });
+
+    it('can execute getLOVFieldTxt - code2_sys', function(done) {
+      var model = {
+        table: 'sql_test',
+        fields: [
+          {
+            name: 'other',
+            sqlselect: "'other'",
+          }
+        ]
+      };
+      var field = {
+        name: 'name',
+        sqlselect: "'ACTIVE'",
+        lov: {
+          parent: 'other',
+          code2_sys: 'test'
+        }
+      };
+      var sql = db.sql.getLOVFieldTxt(jsh, model, field);
+      console.log(sql);
+      db.Row('', sql, [], {}, done);
+    });
+
+    it('can execute getLOVFieldTxt - code_app', function(done) {
+      var model = {
+        table: 'sql_test',
+      };
+      var field = {
+        name: 'name',
+        sqlselect: "'ACTIVE'",
+        lov: {
+          code_app: 'test'
+        }
+      };
+      var sql = db.sql.getLOVFieldTxt(jsh, model, field);
+      console.log(sql);
+      db.Row('', sql, [], {}, done);
+    });
+
+    it('can execute getLOVFieldTxt - code2_app', function(done) {
+      var model = {
+        table: 'sql_test',
+        fields: [
+          {
+            name: 'other',
+            sqlselect: "'other'",
+          }
+        ]
+      };
+      var field = {
+        name: 'name',
+        sqlselect: "'ACTIVE'",
+        lov: {
+          parent: 'other',
+          code2_app: 'test'
+        }
+      };
+      var sql = db.sql.getLOVFieldTxt(jsh, model, field);
+      console.log(sql);
+      db.Row('', sql, [], {}, done);
+    });
+
+  });
 }
