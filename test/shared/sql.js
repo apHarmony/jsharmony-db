@@ -572,30 +572,30 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
       if (!timestampType) {
         throw "Please pass a timestampType to shouldGenerateFormSql"
       }
-      db.Command('', 'drop table if exists cust_flag; create table cust_flag (cust_id bigint, cust_flag_id bigint, cust_flag_type varchar(20)); drop table if exists code_cust_flag_type; create table code_cust_flag_type (code_val varchar(20), code_txt varchar(20),code_end_date '+timestampType+');', [], {}, done);
+      db.Command('', 'drop table if exists test_flag; create table test_flag (test_id bigint, test_flag_id bigint, test_flag_type varchar(20)); drop table if exists code_test_flag_type; create table code_test_flag_type (code_val varchar(20), code_txt varchar(20),code_end_date '+timestampType+');', [], {}, done);
     });
 
     after(function(done) {
-      db.Command('', 'drop table cust_flag; drop table code_cust_flag_type;', [], {}, done);
+      db.Command('', 'drop table test_flag; drop table code_test_flag_type;', [], {}, done);
     });
 
     describe('getModelMultisel', function() {
       it('can call getModelMultisel', function() {
         var model = {
-          table: 'cust_flag',
+          table: 'test_flag',
         };
         var lovfield = {
-          name: 'cust_flag_type',
+          name: 'test_flag_type',
           lov: {
-            code: 'cust_flag_type',
+            code: 'test_flag_type',
           }
         };
         var allfields = [
-          {name: 'cust_id'},
-          {name: 'cust_flag_type'},
+          {name: 'test_id'},
+          {name: 'test_flag_type'},
         ]
         var sql_foreignkeyfields = [
-          {name: 'cust_id'},
+          {name: 'test_id'},
         ];
         var datalockqueries = [];
         var lov_datalockqueries = [];
@@ -607,43 +607,43 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
 
       it('can execute getModelMultisel', function(done) {
         var model = {
-          table: 'cust_flag',
+          table: 'test_flag',
         };
         var lovfield = {
-          name: 'cust_flag_type',
+          name: 'test_flag_type',
           lov: {
-            code: 'cust_flag_type'
+            code: 'test_flag_type'
           }
         };
         var allfields = [
           lovfield,
         ]
         var sql_foreignkeyfields = [
-          {name: 'cust_id'},
+          {name: 'test_id'},
         ];
         var datalockqueries = [];
         var lov_datalockqueries = [];
         var param_datalocks = [];
         var sql = db.sql.getModelMultisel(jsh, model, lovfield, allfields, sql_foreignkeyfields, datalockqueries, lov_datalockqueries, param_datalocks);
         console.log(sql);
-        db.Row('', sql, [DB.types.Int], {cust_id: 1}, done);
+        db.Row('', sql, [DB.types.Int], {test_id: 1}, done);
       });
 
       it('can execute getModelMultisel - with datalock', function(done) {
         var model = {
-          table: 'cust_flag',
+          table: 'test_flag',
         };
         var lovfield = {
-          name: 'cust_flag_type',
+          name: 'test_flag_type',
           lov: {
-            code: 'cust_flag_type'
+            code: 'test_flag_type'
           }
         };
         var allfields = [
           lovfield,
         ]
         var sql_foreignkeyfields = [
-          {name: 'cust_id'},
+          {name: 'test_id'},
         ];
         var datalockqueries = [];
         var lov_datalockqueries = [];
@@ -656,11 +656,98 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
         ];
         var sql = db.sql.getModelMultisel(jsh, model, lovfield, allfields, sql_foreignkeyfields, datalockqueries, lov_datalockqueries, param_datalocks);
         console.log(sql);
-        db.Row('', sql, [DB.types.Int, DB.types.Int], {cust_id: 1, datalock_id: 1}, function(err, rslt){
+        db.Row('', sql, [DB.types.Int, DB.types.Int], {test_id: 1, datalock_id: 1}, function(err, rslt){
           assert.equal(err&&err.message, 'INVALID ACCESS', 'raised a signal');
           done();
         });
       });
+
+      describe('postModelMultisel', function() {
+        it('can call postModelMultisel', function() {
+          var model = {
+            table: 'test_flag',
+          };
+          var lovfield = {
+            name: 'test_flag_type',
+            lov: {
+              code: 'test_flag_type',
+            }
+          };
+          var lovvals = [
+            null,
+            null,
+          ];
+          var foreignkeyfields = [
+            {name: 'test_id'},
+          ];
+          var param_datalocks = [];
+          var datalockqueries = [];
+          var lov_datalockqueries = [];
+          var sql = db.sql.postModelMultisel(jsh, model, lovfield, lovvals, foreignkeyfields, param_datalocks, datalockqueries, lov_datalockqueries);
+          console.log(sql);
+          assert(sql.match(/delete/i), 'has a delete');
+          assert(sql.match(/insert/i), 'has an insert');
+        });
+
+        it('can execute postModelMultisel', function(done) {
+          var model = {
+            table: 'test_flag',
+          };
+          var lovfield = {
+            name: 'test_flag_type',
+            lov: {
+              code: 'test_flag_type',
+            }
+          };
+          var lovvals = [
+            null,
+            null,
+          ];
+          var foreignkeyfields = [
+            {name: 'test_id'},
+          ];
+          var param_datalocks = [];
+          var datalockqueries = [];
+          var lov_datalockqueries = [];
+          var sql = db.sql.postModelMultisel(jsh, model, lovfield, lovvals, foreignkeyfields, param_datalocks, datalockqueries, lov_datalockqueries);
+          console.log(sql);
+          db.Row('', sql, [DB.types.Int, DB.types.VarChar(20), DB.types.VarChar(20)], {test_id: 1, multisel0: 'one', multisel1: 'two'}, done);
+        });
+
+        it('can execute postModelMultisel - with datalock', function(done) {
+          var model = {
+            table: 'test_flag',
+          };
+          var lovfield = {
+            name: 'test_flag_type',
+            lov: {
+              code: 'test_flag_type',
+            }
+          };
+          var lovvals = [
+            null,
+            null,
+          ];
+          var foreignkeyfields = [
+            {name: 'test_id'},
+          ];
+          var param_datalocks = [
+            {
+              field: { type: DB.types.Int, sql_to_db: '1' },
+              pname: 'id',
+              datalockquery: 'id IN (SELECT id FROM sql_test WHERE id=@datalock_id)',
+            }
+          ];
+          var datalockqueries = [];
+          var lov_datalockqueries = [];
+          var sql = db.sql.postModelMultisel(jsh, model, lovfield, lovvals, foreignkeyfields, param_datalocks, datalockqueries, lov_datalockqueries);
+          console.log(sql);
+          db.Row('', sql, [DB.types.Int, DB.types.VarChar(20), DB.types.VarChar(20), DB.types.Int], {test_id: 1, multisel0: 'one', multisel1: 'two',datalock_id: 1}, function(err, rslt){
+            assert.equal(err&&err.message, 'INVALID ACCESS', 'raised a signal');
+            done();
+          });
+        });
+      });  
     });
   });
 
