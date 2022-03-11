@@ -567,19 +567,116 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
     });
   });
 
+  describe('multisel', function() {
+    before(function(done) {
+      if (!timestampType) {
+        throw "Please pass a timestampType to shouldGenerateFormSql"
+      }
+      db.Command('', 'drop table if exists cust_flag; create table cust_flag (cust_id bigint, cust_flag_id bigint, cust_flag_type varchar(20)); drop table if exists code_cust_flag_type; create table code_cust_flag_type (code_val varchar(20), code_txt varchar(20),code_end_date '+timestampType+');', [], {}, done);
+    });
+
+    after(function(done) {
+      db.Command('', 'drop table cust_flag; drop table code_cust_flag_type;', [], {}, done);
+    });
+
+    describe('getModelMultisel', function() {
+      it('can call getModelMultisel', function() {
+        var model = {
+          table: 'cust_flag',
+        };
+        var lovfield = {
+          name: 'cust_flag_type',
+          lov: {
+            code: 'cust_flag_type',
+          }
+        };
+        var allfields = [
+          {name: 'cust_id'},
+          {name: 'cust_flag_type'},
+        ]
+        var sql_foreignkeyfields = [
+          {name: 'cust_id'},
+        ];
+        var datalockqueries = [];
+        var lov_datalockqueries = [];
+        var param_datalocks = [];
+        var sql = db.sql.getModelMultisel(jsh, model, lovfield, allfields, sql_foreignkeyfields, datalockqueries, lov_datalockqueries, param_datalocks);
+        console.log(sql);
+        assert(sql.match(/select/i));
+      });
+
+      it('can execute getModelMultisel', function(done) {
+        var model = {
+          table: 'cust_flag',
+        };
+        var lovfield = {
+          name: 'cust_flag_type',
+          lov: {
+            code: 'cust_flag_type'
+          }
+        };
+        var allfields = [
+          lovfield,
+        ]
+        var sql_foreignkeyfields = [
+          {name: 'cust_id'},
+        ];
+        var datalockqueries = [];
+        var lov_datalockqueries = [];
+        var param_datalocks = [];
+        var sql = db.sql.getModelMultisel(jsh, model, lovfield, allfields, sql_foreignkeyfields, datalockqueries, lov_datalockqueries, param_datalocks);
+        console.log(sql);
+        db.Row('', sql, [DB.types.Int], {cust_id: 1}, done);
+      });
+
+      it('can execute getModelMultisel - with datalock', function(done) {
+        var model = {
+          table: 'cust_flag',
+        };
+        var lovfield = {
+          name: 'cust_flag_type',
+          lov: {
+            code: 'cust_flag_type'
+          }
+        };
+        var allfields = [
+          lovfield,
+        ]
+        var sql_foreignkeyfields = [
+          {name: 'cust_id'},
+        ];
+        var datalockqueries = [];
+        var lov_datalockqueries = [];
+        var param_datalocks = [
+          {
+            field: { type: DB.types.Int, sql_to_db: '1' },
+            pname: 'id',
+            datalockquery: 'id IN (SELECT id FROM sql_test WHERE id=@datalock_id)',
+          }
+        ];
+        var sql = db.sql.getModelMultisel(jsh, model, lovfield, allfields, sql_foreignkeyfields, datalockqueries, lov_datalockqueries, param_datalocks);
+        console.log(sql);
+        db.Row('', sql, [DB.types.Int, DB.types.Int], {cust_id: 1, datalock_id: 1}, function(err, rslt){
+          assert.equal(err&&err.message, 'INVALID ACCESS', 'raised a signal');
+          done();
+        });
+      });
+    });
+  });
+
   describe('LOV', function() {
     before(function(done) {
       if (!timestampType) {
         throw "Please pass a timestampType to shouldGenerateFormSql"
       }
-      db.Command('', 'drop table if exists code_test; create table code_test ("code_val" varchar(20), "code_txt" varchar(20), "code_end_date" '+timestampType+'); drop table if exists code2_test; create table code2_test ("code_val1" varchar(20), "code_val2" varchar(20), "code_txt" varchar(20), "code_end_date" '+timestampType+');', [], {}, done);
+      db.Command('', 'drop table if exists code_test; create table code_test (code_val varchar(20), code_txt varchar(20), code_end_date '+timestampType+'); drop table if exists code2_test; create table code2_test (code_val1 varchar(20), code_val2 varchar(20), code_txt varchar(20), code_end_date '+timestampType+');', [], {}, done);
     });
   
     after(function(done) {
       db.Command('', 'drop table code_test; drop table code2_test;', [], {}, done);
     });
 
-    describe.only('getLOV', function() {
+    describe('getLOV', function() {
       it('can execute getLOV - noop', function(done) {
         var fname = 'id';
         var lov = {};
