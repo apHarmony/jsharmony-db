@@ -206,6 +206,195 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
     // jsharmony:models
   });
 
+  describe('getSearchTerm', function() {
+    //[{"Column":"x_smallint","Value":"1","Comparison":"="}]
+    it('can call getSearchTerm - boolean', function(done) {
+      var model = {
+        table: 'sql_test',
+      };
+      var field = {name: 'name', type: 'boolean', sqlselect: '1'};
+      var pname = 'term';
+      var search_value = '1';
+      var comparison = '=';
+      var search = db.sql.getSearchTerm(jsh, model, field, pname, search_value, comparison);
+      console.log(search);
+      assert(search.sql.match('term'), 'has the parameter name');
+      assert(search.dbtype.name, 'has a dbtype');
+      assert(search.search_value, 'has a search value');
+      db.Row('', 'select * from sql_test where ' + search.sql, [DB.types.Boolean], {term: search_value}, done);
+    });
+
+    it('can call getSearchTerm - int', function(done) {
+      var model = {
+        table: 'sql_test',
+      };
+      var field = {name: 'name', type: 'int', sqlselect: '1'};
+      var pname = 'term';
+      var search_value = '1';
+      var comparison = '=';
+      var search = db.sql.getSearchTerm(jsh, model, field, pname, search_value, comparison);
+      console.log(search);
+      assert(search.sql.match('term'), 'has the parameter name');
+      assert(search.dbtype.name, 'has a dbtype');
+      assert(search.search_value, 'has a search value');
+      db.Row('', 'select * from sql_test where ' + search.sql, [DB.types.Int], {term: search_value}, done);
+    });
+
+    it('can call getSearchTerm - float', function(done) {
+      var model = {
+        table: 'sql_test',
+      };
+      var field = {name: 'name', type: 'float', sqlselect: '1.1'};
+      var pname = 'term';
+      var search_value = '1.1';
+      var comparison = '=';
+      var search = db.sql.getSearchTerm(jsh, model, field, pname, search_value, comparison);
+      console.log(search);
+      assert(search.sql.match('term'), 'has the parameter name');
+      //assert(search.dbtype.name, 'has a dbtype');  // no driver specifies
+      assert(search.search_value, 'has a search value');
+      db.Row('', 'select * from sql_test where ' + search.sql, [DB.types.Float(34)], {term: search_value}, done);
+    });
+
+    it('can call getSearchTerm - string', function(done) {
+      var model = {
+        table: 'sql_test',
+      };
+      var field = {name: 'name', type: 'varchar', sqlselect: "'name'"};
+      var pname = 'term';
+      var search_value = 'name';
+      var comparison = '=';
+      var search = db.sql.getSearchTerm(jsh, model, field, pname, search_value, comparison);
+      console.log(search);
+      assert(search.sql.match('term'), 'has the parameter name');
+      assert(search.dbtype.name, 'has a dbtype');
+      assert(search.search_value, 'has a search value');
+      db.Row('', 'select * from sql_test where ' + search.sql, [DB.types.VarChar(20)], {term: search_value}, done);
+    });
+
+    it('can call getSearchTerm - datetime', function(done) {
+      var model = {
+        table: 'sql_test',
+      };
+      var field = {name: 'name', type: 'datetime', sqlselect: "'2022-02-22 02:22:02'"};
+      var pname = 'term';
+      var search_value = new Date('2022-02-22 02:22:02');
+      var comparison = '=';
+      var search = db.sql.getSearchTerm(jsh, model, field, pname, search_value, comparison);
+      console.log(search);
+      assert(search.sql.match('term'), 'has the parameter name');
+      assert(search.dbtype.name, 'has a dbtype');
+      assert(search.search_value, 'has a search value');
+      db.Row('', 'select * from sql_test where ' + search.sql, [DB.types.DateTime(7, false)], {term: search_value}, done);
+    });
+
+    it('can call getSearchTerm - date', function(done) {
+      var model = {
+        table: 'sql_test',
+      };
+      var field = {name: 'name', type: 'date', sqlselect: "'2022-02-22'"};
+      var pname = 'term';
+      var search_value = new Date('2022-02-22');
+      var comparison = '=';
+      var search = db.sql.getSearchTerm(jsh, model, field, pname, search_value, comparison);
+      console.log(search);
+      assert(search.sql.match('term'), 'has the parameter name');
+      //assert(search.dbtype.name, 'has a dbtype');
+      assert(search.search_value, 'has a search value');
+      db.Row('', 'select * from sql_test where ' + search.sql, [DB.types.Date], {term: search_value}, done);
+    });
+
+    it('can call getSearchTerm - time', function(done) {
+      var model = {
+        table: 'sql_test',
+      };
+      var field = {name: 'name', type: 'time', sqlselect: "'02:22:02'"};
+      var pname = 'term';
+      var search_value = new Date('2022-02-22 02:22:02');
+      var comparison = '=';
+      var search = db.sql.getSearchTerm(jsh, model, field, pname, search_value, comparison);
+      console.log(search);
+      assert(search.sql.match('term'), 'has the parameter name');
+      //assert(search.dbtype.name, 'has a dbtype');
+      assert(search.search_value, 'has a search value');
+      db.Row('', 'select * from sql_test where ' + search.sql, [DB.types.Time(7, false)], {term: search_value}, done);
+    });
+
+    it('can call getSearchTerm - hash', function(done) {
+      var model = {
+        table: 'sql_test',
+      };
+      var field = {name: 'name', type: 'hash', sqlselect: "varbinary('deadbeaf')"};
+      var pname = 'term';
+      var search_value = 'deadbeaf';
+      var comparison = '=';
+      var search = db.sql.getSearchTerm(jsh, model, field, pname, search_value, comparison);
+      console.log(search);
+      assert(search.sql.match('term'), 'has the parameter name');
+      assert(search.dbtype.name, 'has a dbtype');
+      assert(search.search_value, 'has a search value');
+      db.Row('', 'select * from sql_test where ' + search.sql, [DB.types.VarBinary(4)], {term: search_value}, done);
+    });
+
+    it('can call getSearchTerm - null char', function(done) {
+      var model = {
+        table: 'sql_test',
+      };
+      var field = {name: 'name', type: 'varchar'};
+      var pname = 'term';
+      var search_value = '';
+      var comparison = 'null';
+      var search = db.sql.getSearchTerm(jsh, model, field, pname, search_value, comparison);
+      console.log(search);
+      assert(search.dbtype.name, 'has a dbtype');
+      assert(search.search_value, 'has a search value');
+      db.Row('', 'select * from sql_test where ' + search.sql, [DB.types.VarChar(20)], {term: search_value}, done);
+    });
+
+    it('can call getSearchTerm - null int', function(done) {
+      var model = {
+        table: 'sql_test',
+      };
+      var field = {name: 'id', type: 'int'};
+      var pname = 'term';
+      var search_value = '';
+      var comparison = 'null';
+      var search = db.sql.getSearchTerm(jsh, model, field, pname, search_value, comparison);
+      console.log(search);
+      assert(search.dbtype.name, 'has a dbtype');
+      db.Row('', 'select * from sql_test where ' + search.sql, [DB.types.VarChar(20)], {term: search_value}, done);
+    });
+
+    it('can call getSearchTerm - not null char', function(done) {
+      var model = {
+        table: 'sql_test',
+      };
+      var field = {name: 'name', type: 'varchar'};
+      var pname = 'term';
+      var search_value = '';
+      var comparison = 'notnull';
+      var search = db.sql.getSearchTerm(jsh, model, field, pname, search_value, comparison);
+      console.log(search);
+      assert(search.dbtype.name, 'has a dbtype');
+      assert(search.search_value, 'has a search value');
+      db.Row('', 'select * from sql_test where ' + search.sql, [DB.types.VarChar(20)], {term: search_value}, done);
+    });
+
+    it('can call getSearchTerm - not null int', function(done) {
+      var model = {
+        table: 'sql_test',
+      };
+      var field = {name: 'id', type: 'int'};
+      var pname = 'term';
+      var search_value = '';
+      var comparison = 'notnull';
+      var search = db.sql.getSearchTerm(jsh, model, field, pname, search_value, comparison);
+      console.log(search);
+      assert(search.dbtype.name, 'has a dbtype');
+      db.Row('', 'select * from sql_test where ' + search.sql, [DB.types.VarChar(20)], {term: search_value}, done);
+    });
+  });
+
   describe('getDefaultTasks', function() {
     it('can call getDefaultTasks', function() {
       var dflt_sql_fields = [
