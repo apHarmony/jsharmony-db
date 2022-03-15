@@ -389,7 +389,7 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
       var enc_datalockqueries = [];
       var param_datalocks = [
         {
-          field: { type: DB.types.Int, sql_to_db: '1' },
+          field: { type: DB.types.Int, sql_to_db: '42' },
           pname: 'id',
           datalockquery: 'id IN (SELECT id FROM sql_test WHERE id=@datalock_id)',
         }
