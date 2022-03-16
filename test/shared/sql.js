@@ -940,6 +940,24 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
     });
   });
 
+  describe('getTabCode', function() {
+    it('can execute getTabCode', function(done) {
+      var model = {
+        table: 'sql_test',
+      };
+      var selectfields = [
+        { name: 'id' },
+      ];
+      var keys = [
+        { name: 'id' },
+      ];
+      var datalockqueries = [];
+      var sql = db.sql.getTabCode(jsh, model, selectfields, keys, datalockqueries);
+      console.log(sql);
+      db.Row('', sql, [DB.types.Int], {id: 1}, done);
+    });
+  });
+
   describe('LOV', function() {
     before(function(done) {
       if (!timestampType) {
