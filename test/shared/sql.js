@@ -958,6 +958,19 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
     });
   });
 
+  describe('getTitle', function() {
+    it('can execute getTitle', function(done) {
+      var model = {
+        table: 'sql_test',
+      };
+      var sql = "select name from sql_test where id=@id";
+      var datalockqueries = [];
+      var dbsql = db.sql.getTitle(jsh, model, sql, datalockqueries);
+      console.log(dbsql);
+      db.Row('', dbsql, [DB.types.Int], {id: 1}, done);
+    });
+  });
+
   describe('LOV', function() {
     before(function(done) {
       if (!timestampType) {
