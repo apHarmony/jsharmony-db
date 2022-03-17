@@ -774,6 +774,34 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
     });
   });
 
+  describe.only('Reports', function() {
+    it('can call parseReportSQLData', function() {
+      var dname = null;
+      var dparams = {sql: 'select id, name from sql_test'};
+      var skipdatalock = false;
+      var datalockqueries = [];
+      var sql = db.sql.parseReportSQLData(jsh, dname, dparams, skipdatalock, datalockqueries);
+      console.log(sql);
+      assert(sql);
+    });
+
+    it('can call runReportJob', function() {
+      var model = {jobqueue: {sql: 'select id, name from sql_test'}};
+      var datalockqueries = [];
+      var sql = db.sql.runReportJob(jsh, model, datalockqueries);
+      console.log(sql);
+      assert(sql);
+    });
+
+    it('can call runReportBatch', function() {
+      var model = {batch: {sql: 'select id, name from sql_test'}};
+      var datalockqueries = [];
+      var sql = db.sql.runReportBatch(jsh, model, datalockqueries);
+      console.log(sql);
+      assert(sql);
+    });
+  });
+
   describe('getCMS_M', function() {
     it('can call getCMS_M', function() {
       var aspa_object = 'sql_test';
