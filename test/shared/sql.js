@@ -756,6 +756,24 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
     });
   });
 
+  describe('Download', function() {
+    it('can execute Download', function(done) {
+      var model = {
+        table: 'sql_test',
+      };
+      var fields = [
+        {name: 'name'},
+      ];
+      var keys = [
+        {name: 'id'},
+      ];
+      var datalockqueries = [];
+      var sql = db.sql.Download(jsh, model, fields, keys, datalockqueries);
+      console.log(sql);
+      db.Row('', sql, [DB.types.Int], {id: 1}, done);
+    });
+  });
+
   describe('multisel', function() {
     before(function(done) {
       if (!timestampType) {
