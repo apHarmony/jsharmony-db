@@ -1365,4 +1365,29 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
       });
     });
   });
+
+  describe("getBreadcrumbTasks", function() {
+    it('can call getBreadcrumbTasks - plain sql', function() {
+      var model = {};
+      var sql = 'select id_name from sql_test where id=1';
+      var datalockqueries = [];
+      var bcrumb_sql_fields = [];
+      var dbsql = db.sql.getBreadcrumbTasks(jsh, model, sql, datalockqueries, bcrumb_sql_fields);
+      console.log(dbsql);
+      assert(dbsql.match(/select/i));
+    });
+
+    it('can call getBreadcrumbTasks - field list', function() {
+      var model = {};
+      var sql = '%%%BCRUMBSQLFIELDS%%%';
+      var datalockqueries = [];
+      var bcrumb_sql_fields = [
+        {name: 'id'},
+        {name: 'name'},
+      ];
+      var dbsql = db.sql.getBreadcrumbTasks(jsh, model, sql, datalockqueries, bcrumb_sql_fields);
+      console.log(dbsql);
+      assert(dbsql.match(/select/i));
+    });
+  });
 }
