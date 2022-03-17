@@ -203,7 +203,37 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
       db.Row('', sql, [DB.types.Int], {id: 1}, done);
     });
 
-    // jsharmony:models
+    it('can execute getModelForm - jsharmony:models', function(done) {
+      var model = {
+        table: 'jsharmony:models',
+      };
+      var selecttype = 'unknown';
+      var allfields = [
+        {"name":"model_id","type":"varchar","actions":"B","key":1,"caption":"Model ID"},
+        {"name":"model_title","type":"varchar","actions":"B","caption":"Title"},
+        {"name":"model_layout","type":"varchar","actions":"B","caption":"Layout"},
+        {"name":"model_table","type":"varchar","actions":"B","caption":"Table"},
+        {"name":"model_module","type":"varchar","actions":"B","caption":"Module"},
+        {"name":"model_parents","type":"varchar","actions":"B","caption":"Parents"}
+        ]
+      var sql_allkeyfields = [];
+      var datalockqueries = [];
+      var sortfields = [
+        {field: 'model_id', dir: 'asc'}
+      ];
+      jsh.Models = {
+        'x': {
+          _inherits: [],
+          title: 'title',
+          layout: 'layout',
+          table: 'sql_test',
+          module: 'module',
+        }
+      }
+      var sql = db.sql.getModelForm(jsh, model, selecttype, allfields, sql_allkeyfields, datalockqueries, sortfields);
+      console.log(sql);
+      db.Row('', sql, [DB.types.Int], {id: 1}, done);
+    });
   });
 
   describe('getSearchTerm', function() {
@@ -774,7 +804,7 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
     });
   });
 
-  describe.only('Reports', function() {
+  describe('Reports', function() {
     it('can call parseReportSQLData', function() {
       var dname = null;
       var dparams = {sql: 'select id, name from sql_test'};
