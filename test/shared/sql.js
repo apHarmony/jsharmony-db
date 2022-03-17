@@ -774,6 +774,15 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
     });
   });
 
+  describe('getCMS_M', function() {
+    it('can call getCMS_M', function() {
+      var aspa_object = 'sql_test';
+      var sql = db.sql.getCMS_M(aspa_object);
+      console.log(sql);
+      assert(sql);
+    });
+  });
+
   describe('multisel', function() {
     before(function(done) {
       if (!timestampType) {
