@@ -26,7 +26,7 @@ jsh.map.code_txt = 'code_txt';
 jsh.map.code_val = 'code_val';
 jsh.map.code_parent = 'code_parent';
 jsh.map.code_end_date = 'code_end_date';
-jsh.map.code_seq = 'code_val';
+jsh.map.code_seq = 'code_seq';
 jsh.map.code = 'code';
 jsh.map.code2 = 'code2';
 jsh.map.code_sys = 'code';
@@ -846,7 +846,7 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
       if (!timestampType) {
         throw "Please pass a timestampType to shouldGenerateFormSql"
       }
-      db.Command('', 'drop table if exists test_flag; create table test_flag (test_id bigint, test_flag_id bigint, test_flag_type varchar(20)); drop table if exists code_test_flag_type; create table code_test_flag_type (code_val varchar(20), code_txt varchar(20),code_end_date '+timestampType+');', [], {}, done);
+      db.Command('', 'drop table if exists test_flag; create table test_flag (test_id bigint, test_flag_id bigint, test_flag_type varchar(20)); drop table if exists code_test_flag_type; create table code_test_flag_type (code_seq int, code_val varchar(20), code_txt varchar(20),code_end_date '+timestampType+');', [], {}, done);
     });
 
     after(function(done) {
@@ -1061,7 +1061,7 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
       if (!timestampType) {
         throw "Please pass a timestampType to shouldGenerateFormSql"
       }
-      db.Command('', 'drop table if exists code_test; create table code_test (code_val varchar(20), code_txt varchar(20), code_end_date '+timestampType+'); drop table if exists code2_test; create table code2_test (code_val1 varchar(20), code_val2 varchar(20), code_txt varchar(20), code_end_date '+timestampType+');', [], {}, done);
+      db.Command('', 'drop table if exists code_test; create table code_test (code_seq int, code_val varchar(20), code_txt varchar(20), code_end_date '+timestampType+'); drop table if exists code2_test; create table code2_test (code_seq int, code_val1 varchar(20), code_val2 varchar(20), code_txt varchar(20), code_end_date '+timestampType+');', [], {}, done);
     });
   
     after(function(done) {
