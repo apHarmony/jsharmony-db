@@ -1,6 +1,6 @@
 {
   "name": "jsharmony-db",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "jsHarmony Database Core",
   "main": "index.js",
   "scripts": {
@@ -26,7 +26,7 @@
     "lodash": "^4.17.19"
   },
   "devDependencies": {
-    "jsharmony": "^1.9.0",
+    "jsharmony": "^1.11.0",
     "mocha": "^7.2.0"
   }
 }
