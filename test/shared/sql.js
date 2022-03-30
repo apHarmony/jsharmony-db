@@ -520,6 +520,30 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
       });
     });
 
+    it('return xrowcount with no keys', function(done) {
+      var model = {
+        table: 'sql_test',
+      };
+      var fields = [
+        {name: 'name'},
+      ];
+      var keys = [
+      ];
+      var sql_extfields = [];
+      var sql_extvalues = [];
+      var encryptedfields = [];
+      var hashfields = [];
+      var enc_datalockqueries = [];
+      var param_datalocks = [];
+      var dbsql = db.sql.putModelForm(jsh, model, fields, keys, sql_extfields, sql_extvalues, encryptedfields, hashfields, enc_datalockqueries, param_datalocks);
+      console.log(dbsql);
+      db.Row('', dbsql.sql, [DB.types.VarChar(20)], {name: 'name'}, function(err, rslt) {
+        console.log(err, rslt);
+        assert.equal(rslt && rslt.xrowcount, 1);
+        done(err);
+      });
+    });
+
     it('uses sqlgetinsertkeys', function() {
       var model = {
         table: 'sql_test',
@@ -685,7 +709,16 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
       var param_datalocks = [];
       var dbsql = db.sql.putModelForm(jsh, model, fields, keys, sql_extfields, sql_extvalues, encryptedfields, hashfields, enc_datalockqueries, param_datalocks);
       console.log(dbsql);
-      db.Row('', dbsql.enc_sql, [DB.types.Int, DB.types.VarChar(20)], {id: 1, name: 'name'}, done);
+      db.Row('', dbsql.sql, [DB.types.VarChar(20)], {name: 'name'}, function(err, ins_rslt) {
+        console.log(err, ins_rslt);
+        if (err) return done(err);
+        db.Row('', dbsql.enc_sql, [DB.types.Int, DB.types.VarChar(20)], {id: ins_rslt&&ins_rslt.id, name: 'name'}, function(err, rslt) {
+          console.log(err, rslt);
+          if (err) return done(err);
+          assert.equal(rslt && rslt.xrowcount, 1, "has xrowcount");
+          done(err);
+        });
+      });
     });
   });
 
@@ -728,7 +761,12 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
       var datalockqueries = [];
       var sql = db.sql.postModelForm(jsh, model, fields, keys, sql_extfields, sql_extvalues, hashfields, param_datalocks, datalockqueries);
       console.log(sql);
-      db.Row('', sql, [DB.types.Int, DB.types.VarChar(20)], {id: 1, name: 'name'}, done);
+      db.Row('', sql, [DB.types.Int, DB.types.VarChar(20)], {id: 99, name: 'name'}, function(err, rslt) {
+        console.log(err, rslt);
+        if (err) return done(err);
+        assert.equal(rslt && rslt.xrowcount, 0, "has xrowcount");
+        done(err);
+      });
     });
   });
 
@@ -782,7 +820,12 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
       var datalockqueries = [];
       var sql = db.sql.deleteModelForm(jsh, model, keys, datalockqueries);
       console.log(sql);
-      db.Row('', sql, [DB.types.Int], {id: 1}, done);
+      db.Row('', sql, [DB.types.Int], {id: 99},  function(err, rslt) {
+        console.log(err, rslt);
+        if (err) return done(err);
+        assert.equal(rslt && rslt.xrowcount, 0, "has xrowcount");
+        done(err);
+      });
     });
   });
 
@@ -923,7 +966,7 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
         var lov_datalockqueries = [];
         var param_datalocks = [
           {
-            field: { type: DB.types.Int, sql_to_db: '1' },
+            field: { type: DB.types.Int, sql_to_db: '99' },
             pname: 'id',
             datalockquery: 'id IN (SELECT id FROM sql_test WHERE id=@datalock_id)',
           }
@@ -985,7 +1028,12 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
           var lov_datalockqueries = [];
           var sql = db.sql.postModelMultisel(jsh, model, lovfield, lovvals, foreignkeyfields, param_datalocks, datalockqueries, lov_datalockqueries);
           console.log(sql);
-          db.Row('', sql, [DB.types.Int, DB.types.VarChar(20), DB.types.VarChar(20)], {test_id: 1, multisel0: 'one', multisel1: 'two'}, done);
+          db.Row('', sql, [DB.types.Int, DB.types.VarChar(20), DB.types.VarChar(20)], {test_id: 99  , multisel0: 'one', multisel1: 'two'}, function(err, rslt) {
+            console.log(err, rslt);
+            if (err) return done(err);
+            assert.equal(rslt && rslt.xrowcount, 0, "has xrowcount");
+            done(err);
+          });
         });
 
         it('can execute postModelMultisel - with datalock', function(done) {
@@ -1007,7 +1055,7 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
           ];
           var param_datalocks = [
             {
-              field: { type: DB.types.Int, sql_to_db: '1' },
+              field: { type: DB.types.Int, sql_to_db: '99' },
               pname: 'id',
               datalockquery: 'id IN (SELECT id FROM sql_test WHERE id=@datalock_id)',
             }
@@ -1205,7 +1253,7 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
         var datalockqueries = [];
         var param_datalocks = [
           {
-            field: { type: DB.types.Int, sql_to_db: '1' },
+            field: { type: DB.types.Int, sql_to_db: '99' },
             pname: 'id',
             datalockquery: 'id IN (SELECT id FROM sql_test WHERE id=@datalock_id)',
           }
