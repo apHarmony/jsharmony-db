@@ -34,11 +34,22 @@ jsh.map.code2_sys = 'code2';
 jsh.map.code_app = 'code';
 jsh.map.code2_app = 'code2';
 
-exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, timestampType) {
+exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, timestampType, sqlFuncs) {
   //console.log(db, DB);
   var options = {
     dbconfig: db.dbconfig,
   };
+
+  sqlFuncs = _.extend({
+    DropTableIfExists: {
+      params: ['TABLE'],
+      sql: 'drop table if exists %%%TABLE%%%',
+    }
+  }, sqlFuncs);
+
+  function parseSQL(sql){
+    return db.ParseSQLFuncs(db.ParseSQL(sql), sqlFuncs);
+  }
 
   before(function(done) {
     db.platform.Modules = {
@@ -55,7 +66,7 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
         },
       }
     };
-    db.Command('', 'drop table if exists sql_test; create table sql_test (id '+primaryKey+', name varchar(20));', [], {}, done)
+    db.Command('', parseSQL('DropTableIfExists(sql_test); create table sql_test (id '+primaryKey+', name varchar(20));'), [], {}, done)
   });
 
   after(function(done) {
@@ -354,9 +365,9 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
       var model = {
         table: 'sql_test',
       };
-      var field = {name: 'name', type: 'hash', sqlselect: "varbinary('deadbeaf')"};
+      var field = {name: 'name', type: 'hash', sqlselect: "cast('deadbeef' as varbinary)"};
       var pname = 'term';
-      var search_value = 'deadbeaf';
+      var search_value = 'deadbeef';
       var comparison = '=';
       var search = db.sql.getSearchTerm(jsh, model, field, pname, search_value, comparison);
       console.log(search);
@@ -889,7 +900,7 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
       if (!timestampType) {
         throw "Please pass a timestampType to shouldGenerateFormSql"
       }
-      db.Command('', 'drop table if exists test_flag; create table test_flag (test_id bigint, test_flag_id bigint, test_flag_type varchar(20)); drop table if exists code_test_flag_type; create table code_test_flag_type (code_seq int, code_val varchar(20), code_txt varchar(20),code_end_date '+timestampType+');', [], {}, done);
+      db.Command('', parseSQL('DropTableIfExists(test_flag); create table test_flag (test_id bigint, test_flag_id bigint, test_flag_type varchar(20)); DropTableIfExists(code_test_flag_type); create table code_test_flag_type (code_seq int, code_val varchar(20), code_txt varchar(20),code_end_date '+timestampType+');'), [], {}, done);
     });
 
     after(function(done) {
@@ -1109,7 +1120,7 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
       if (!timestampType) {
         throw "Please pass a timestampType to shouldGenerateFormSql"
       }
-      db.Command('', 'drop table if exists code_test; create table code_test (code_seq int, code_val varchar(20), code_txt varchar(20), code_end_date '+timestampType+'); drop table if exists code2_test; create table code2_test (code_seq int, code_val1 varchar(20), code_val2 varchar(20), code_txt varchar(20), code_end_date '+timestampType+');', [], {}, done);
+      db.Command('', parseSQL('DropTableIfExists(code_test); create table code_test (code_seq int, code_val varchar(20), code_txt varchar(20), code_end_date '+timestampType+'); DropTableIfExists(code2_test); create table code2_test (code_seq int, code_val1 varchar(20), code_val2 varchar(20), code_txt varchar(20), code_end_date '+timestampType+');'), [], {}, done);
     });
   
     after(function(done) {
