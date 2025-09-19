@@ -36,9 +36,6 @@ jsh.map.code2_app = 'code2';
 
 exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, timestampType, sqlFuncs) {
   //console.log(db, DB);
-  var options = {
-    dbconfig: db.dbconfig,
-  };
 
   sqlFuncs = _.extend({
     DropTableIfExists: {
@@ -365,7 +362,8 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
       var model = {
         table: 'sql_test',
       };
-      var field = {name: 'name', type: 'hash', sqlselect: "cast('deadbeef' as varbinary)"};
+      var varbinaryType = db.sql.object.getDBType({ type: 'varbinary' });
+      var field = {name: 'name', type: 'hash', sqlselect: "cast('deadbeef' as "+varbinaryType+")"};
       var pname = 'term';
       var search_value = 'deadbeef';
       var comparison = '=';
@@ -1288,7 +1286,7 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
           name: 'id',
           lov: {},
         };
-        var sql = db.sql.getLOVFieldTxt(jsh, model, field);
+        var sql = 'select '+db.sql.getLOVFieldTxt(jsh, model, field);
         console.log(sql);
         db.Row('', sql, [], {}, done);
       });
@@ -1307,7 +1305,7 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
             ]
           }
         };
-        var sql = db.sql.getLOVFieldTxt(jsh, model, field);
+        var sql = 'select '+db.sql.getLOVFieldTxt(jsh, model, field);
         console.log(sql);
         db.Row('', sql, [], {}, done);
       });
@@ -1343,7 +1341,7 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
           ]
         };
         var field = model.fields[1];
-        var sql = db.sql.getLOVFieldTxt(jsh, model, field);
+        var sql = 'select '+db.sql.getLOVFieldTxt(jsh, model, field);
         console.log(sql);
         db.Row('', sql, [], {}, done);
       });
@@ -1356,10 +1354,10 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
           name: 'id',
           sqlselect: "'ACTIVE'",
           lov: {
-            sqlselect: 'SELECT ID "code_val", NAME "code_txt" FROM SQL_TEST'
+            sqlselect: "SELECT 'test' \"code_txt\""
           }
         };
-        var sql = db.sql.getLOVFieldTxt(jsh, model, field);
+        var sql = 'select '+db.sql.getLOVFieldTxt(jsh, model, field);
         console.log(sql);
         db.Row('', sql, [], {}, done);
       });
@@ -1375,7 +1373,7 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
             code: 'test'
           }
         };
-        var sql = db.sql.getLOVFieldTxt(jsh, model, field);
+        var sql = 'select '+db.sql.getLOVFieldTxt(jsh, model, field);
         console.log(sql);
         db.Row('', sql, [], {}, done);
       });
@@ -1398,7 +1396,7 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
             code2: 'test'
           }
         };
-        var sql = db.sql.getLOVFieldTxt(jsh, model, field);
+        var sql = 'select '+db.sql.getLOVFieldTxt(jsh, model, field);
         console.log(sql);
         db.Row('', sql, [], {}, done);
       });
@@ -1414,7 +1412,7 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
             code_sys: 'test'
           }
         };
-        var sql = db.sql.getLOVFieldTxt(jsh, model, field);
+        var sql = 'select '+db.sql.getLOVFieldTxt(jsh, model, field);
         console.log(sql);
         db.Row('', sql, [], {}, done);
       });
@@ -1437,7 +1435,7 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
             code2_sys: 'test'
           }
         };
-        var sql = db.sql.getLOVFieldTxt(jsh, model, field);
+        var sql = 'select '+db.sql.getLOVFieldTxt(jsh, model, field);
         console.log(sql);
         db.Row('', sql, [], {}, done);
       });
@@ -1453,7 +1451,7 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
             code_app: 'test'
           }
         };
-        var sql = db.sql.getLOVFieldTxt(jsh, model, field);
+        var sql = 'select '+db.sql.getLOVFieldTxt(jsh, model, field);
         console.log(sql);
         db.Row('', sql, [], {}, done);
       });
@@ -1476,7 +1474,7 @@ exports = module.exports = function shouldGenerateFormSql(db, DB, primaryKey, ti
             code2_app: 'test'
           }
         };
-        var sql = db.sql.getLOVFieldTxt(jsh, model, field);
+        var sql = 'select '+db.sql.getLOVFieldTxt(jsh, model, field);
         console.log(sql);
         db.Row('', sql, [], {}, done);
       });
